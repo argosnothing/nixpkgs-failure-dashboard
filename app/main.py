@@ -1,6 +1,7 @@
 import uvicorn
 
 from fastapi import Depends, FastAPI
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
@@ -37,4 +38,6 @@ def list_builds(
 
 
 def main():
+    app.mount("/", StaticFiles(directory="dist", html=True))
+
     uvicorn.run(app, host="0.0.0.0", port=8080)

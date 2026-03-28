@@ -14,3 +14,4 @@ builds.db
 
 # front
 node_modules
+dist
