@@ -11,3 +11,6 @@ build-logs
 packages.json
 packages
 builds.db
+
+# front
+node_modules

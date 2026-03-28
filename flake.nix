@@ -31,6 +31,8 @@
         packages = with pkgs; [
           py-env
           sqlite
+          nodejs
+          pnpm
         ];
       };
     });
