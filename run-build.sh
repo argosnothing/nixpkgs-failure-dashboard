@@ -3,6 +3,8 @@
 set -euo pipefail
 
 INPUT_FILE="$1"
+NIXPKGS_PATH="$2"
+
 JOBS=$(nproc)
 TIMEOUT=30
 
@@ -17,7 +19,7 @@ build_package() {
   out_log="$LOG_DIR/${name}.log"
 
   timeout "$TIMEOUT" \
-    nix-build -E "(import ./nixpkgs {}).${name}" \
+    nix-build -E "(import $NIXPKGS_PATH {}).${name}" \
       --max-jobs 1 \
       --cores 1 \
       --no-link \
@@ -35,6 +37,6 @@ build_package() {
 }
 
 export -f build_package
-export LOG_DIR TIMEOUT
+export LOG_DIR TIMEOUT NIXPKGS_PATH
 
 cat "$INPUT_FILE" | xargs -I{} -P "$JOBS" bash -c 'build_package "$@"' _ {}
