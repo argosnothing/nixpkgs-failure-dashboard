@@ -24,10 +24,7 @@
 
     devShells = forAllSystems (pkgs: let
       py-env = pkgs.python3.withPackages (
-        p: [
-          p.fastapi
-          p.fastapi-cli
-        ]
+        p: [ p.hatchling ]
       );
     in {
       default = pkgs.mkShell {
