@@ -20,7 +20,7 @@ def list_builds(
     db: Session = Depends(get_db),
     page: int = 1,
 ):
-    base_query = db.query(Build).filter(Build.status == "failed")
+    base_query = db.query(Build).filter()
 
     total = base_query.count()
     builds = (
