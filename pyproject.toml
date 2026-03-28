@@ -15,6 +15,7 @@ dependencies = [
 
 [project.scripts]
 nixpkgs-failure-dashboard = "app.main:main"
+classify-build-logs = "app.classify:main"
 
 [project.optional-dependencies]
 dev = [ "black", "isort" ]
