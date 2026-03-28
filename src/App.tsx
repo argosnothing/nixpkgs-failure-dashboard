@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import "./App.scss";
 
 const LIMIT_PER_PAGE = 100;
@@ -58,19 +60,24 @@ function BuildEntry({ build }: { build: Build }) {
   );
 }
 
-function BuildsTable() {
+function BuildsTable({
+  currentPage,
+  setPage,
+}: {
+  currentPage: number,
+  setPage: (page: number) => void
+}) {
   const [data, setData] = useState<Build[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    fetch(`/api/builds?page=${page}`)
+    fetch(`/api/builds?page=${currentPage}`)
       .then((res) => res.json())
       .then((res: ApiResponse) => {
         setData(res.results);
         setTotal(res.total);
       });
-  }, [page]);
+  }, [currentPage]);
 
   const totalPages = Math.ceil(total / LIMIT_PER_PAGE);
 
@@ -79,10 +86,10 @@ function BuildsTable() {
       <h2>Builds ({total})</h2>
 
       <Pager
-        page={page}
+        page={currentPage}
         totalPages={totalPages}
-        onPrev={() => setPage(page - 1)}
-        onNext={() => setPage(page + 1)}
+        onPrev={() => setPage(currentPage - 1)}
+        onNext={() => setPage(currentPage + 1)}
       />
 
       <table>
@@ -104,7 +111,16 @@ function BuildsTable() {
 }
 
 export default function App() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get("page") || 1);
+
+  const setPage = (p: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", String(p));
+    setSearchParams(params);
+  };
+
   return (
-      <BuildsTable />
+      <BuildsTable currentPage={page} setPage={setPage} />
   );
 }
