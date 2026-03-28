@@ -1,3 +1,12 @@
+# direnv
+.direnv
+.envrc
+
+# python
+__pycache__
+*.pyc
+
+# generated
 build-logs
 packages.json
 packages
