@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { List, type RowComponentProps } from "react-window";
 
 import "./App.scss";
 
@@ -11,62 +11,60 @@ interface Build {
 
 type ApiResponse = Build[];
 
-function BuildEntry({ build }: { build: Build }) {
+function BuildEntry({
+  index,
+  builds,
+  style
+}: RowComponentProps<{
+  builds: Build[];
+}>) {
+  let entry = builds[index];
+
   return (
-    <tr>
-      <td className="attrpath">{build.attrpath}</td>
-      <td className="status">
-        {build.status}
-      </td>
-      <td>
-        <a href={`/build-logs/${build.attrpath}.log`} target="_blank">
-          view
-        </a>
-      </td>
-    </tr>
+    <div className="builds-entry" style={style}>
+      <a href={`/build-logs/${entry.attrpath}.log`} target="_blank">
+        { builds[index].attrpath }
+      </a>
+      <span>({ builds[index].status })</span>
+    </div>
   );
 }
 
-function BuildsTable() {
+function BuildsTable({ builds }: { builds: Build[]; }) {
+    return (
+      <List
+        className="builds-table"
+        rowComponent={BuildEntry}
+        rowCount={builds.length}
+        rowHeight={25}
+        rowProps={{ builds }}
+      />
+    )
+}
+
+export default function App() {
+  // const [searchParams, _] = useSearchParams();
+  // console.log(searchParams);
+
   const [data, setData] = useState<Build[]>([]);
-  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     fetch(`/api/builds`)
       .then((res) => res.json())
       .then((res: ApiResponse) => {
         setData(res);
-        setTotal(res.length);
       });
   }, []);
 
+  if (data.length == 0)
+    return <p>Loading...</p>;
+
+  console.log(data.length);
+
   return (
     <>
-      <h2>Builds ({total})</h2>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Attrpath</th>
-            <th>Status</th>
-            <th>Log</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((b) => (
-            <BuildEntry key={b.id} build={b} />
-          ))}
-        </tbody>
-      </table>
+      <h2>Builds ({data.length})</h2>
+      <BuildsTable builds={data} />
     </>
-  );
-}
-
-export default function App() {
-  const [searchParams, _] = useSearchParams();
-  console.log(searchParams);
-
-  return (
-      <BuildsTable />
   );
 }
