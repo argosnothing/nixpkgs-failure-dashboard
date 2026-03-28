@@ -1,10 +1,9 @@
-from contextlib import contextmanager
 import os
 import pathlib
+from contextlib import contextmanager
 
 from .db import get_db, reset_db
 from .models import Build
-
 
 LOG_DIR = pathlib.Path("build-logs")
 
@@ -41,7 +40,6 @@ def main():
 
         session.add_all(builds)
         session.commit()
-
 
 
 if __name__ == "__main__":

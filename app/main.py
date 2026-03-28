@@ -1,5 +1,4 @@
 import uvicorn
-
 from fastapi import Depends, FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -7,7 +6,6 @@ from sqlalchemy.orm import Session
 
 from .db import get_db
 from .models import Build
-
 
 LIMIT_PER_PAGE = 100
 
@@ -25,8 +23,7 @@ def list_builds(
 
     total = base_query.count()
     builds = (
-        base_query
-        .offset((page - 1) * LIMIT_PER_PAGE)
+        base_query.offset((page - 1) * LIMIT_PER_PAGE)
         .limit(LIMIT_PER_PAGE)
         .all()
     )
