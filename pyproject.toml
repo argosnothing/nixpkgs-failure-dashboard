@@ -18,7 +18,7 @@ nixpkgs-failure-dashboard = "app.main:main"
 classify-build-logs = "app.classify:main"
 
 [project.optional-dependencies]
-dev = [ "black", "isort" ]
+dev = [ "black", "isort", "fastapi-cli" ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]

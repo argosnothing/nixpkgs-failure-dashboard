@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import os
 import pathlib
 
@@ -26,7 +27,7 @@ def main():
 
     reset_db()
 
-    with get_db() as session:
+    with contextmanager(get_db)() as session:
         for logfile in logs:
             print("processing", logfile)
             log = logfile.read_bytes().decode(errors="ignore")
