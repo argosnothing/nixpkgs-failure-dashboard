@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { List, useListRef, type RowComponentProps } from "react-window";
 import { useSearchParams } from "react-router-dom";
 
@@ -99,27 +99,55 @@ export default function App() {
       .then(() => setSearchParams({ selected: selectedLog }));
   }, [selectedLog]);
 
-  if (data.length === 0)
+  const [query, setQuery] = useState("");
+
+  const filteredData = useMemo(() => {
+    if (!query) return data;
+
+    const q = query.toLowerCase();
+
+    return data.filter((b) =>
+      b.attrpath.toLowerCase().includes(q)
+    );
+  }, [data, query]);
+
+  const displayed = useMemo(() => {
+    return filteredData;
+  }, [filteredData]);
+
+
+  if (data.length === 0) {
     return (
       <div className="loading">
         <img className="spinning-nix" src="/nix.svg" height="24px" width="24px" alt=""/>
         <p>Loading (this might take a few seconds)...</p>
       </div>
     );
+  }
 
   return (
     <div className="panel-dual-view">
       <div className="panel-left">
-        <h2>Builds ({data.length})</h2>
-        <BuildsTable
-          builds={data}
-          top={selected}
-          selected={selectedLog}
-          onSelect={(b) => setSelectedLog(b.attrpath)}
-        />
+        <div className="panel panel-left-top">
+          <input
+            placeholder="Search logs..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      
+        <div className="panel panel-left-bottom">
+          <h2>Builds ({displayed.length})</h2>
+          <BuildsTable
+            builds={displayed}
+            top={selected}
+            selected={selectedLog}
+            onSelect={(b) => setSelectedLog(b.attrpath)}
+          />
+        </div>
       </div>
 
-      <div className="panel-right">
+      <div className="panel panel-right">
         <h2>Log Viewer</h2>
         {selectedLog ? (
           <>

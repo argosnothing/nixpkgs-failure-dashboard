@@ -48,19 +48,47 @@ a {
 }
 
 .panel {
+  padding: 1em;
+  border: 1px solid white;
+  box-sizing: border-box;
+
+  &-left, &-right {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: clip;
+  }
+
+  &-left-top {
+    display: flex;
+    gap: 1em;
+
+    input {
+      color: white;
+      flex: 1;
+      padding: 4px;
+      background: none;
+      border: none;
+      border-bottom: 1px dashed white;
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+
+  &-left-bottom {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    flex: 1;
+  }
+
   &-dual-view, &-left, &-right {
-    box-sizing: border-box;
     height: 100%;
     display: flex;
     gap: 1em;
-  }
-
-  &-left, &-right {
-    padding: 1em;
-    border: 1px solid white;
-    width: 100%;
-    flex-direction: column;
-    overflow: clip;
   }
 }
 
