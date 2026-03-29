@@ -1,4 +1,3 @@
-from time import perf_counter
 import orjson
 import uvicorn
 
@@ -19,7 +18,7 @@ app.mount("/build-logs", StaticFiles(directory="build-logs"))
 def list_builds(db: Session = Depends(get_db)):
     builds_rows = db.execute(
       select(Build.attrpath, Build.status)
-      .where(Build.status != "success")
+      .where(Build.status == "failed")
     ).all()
 
     output = [
