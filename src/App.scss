@@ -47,6 +47,13 @@ a {
    color: #a4d5f7;
 }
 
+button {
+  color: white;
+  background-color: #3b5487;
+  border: none;
+  padding: .5em 1em;
+}
+
 .panel {
   padding: 1em;
   border: 1px solid white;
@@ -90,6 +97,12 @@ a {
     display: flex;
     gap: 1em;
   }
+}
+
+.mode-type {
+  display: flex;
+  gap: 1ch;
+  align-items: center;
 }
 
 .build-entry {

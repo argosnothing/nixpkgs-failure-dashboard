@@ -100,20 +100,42 @@ export default function App() {
   }, [selectedLog]);
 
   const [query, setQuery] = useState("");
+  const [mode, setMode] = useState<"name" | "content">("name");
+  const [searchResults, setSearchResults] = useState<Build[] | null>(null);
 
   const filteredData = useMemo(() => {
-    if (!query) return data;
+    if (!query || mode !== "name") return data;
 
     const q = query.toLowerCase();
 
     return data.filter((b) =>
       b.attrpath.toLowerCase().includes(q)
     );
-  }, [data, query]);
+  }, [data, query, mode]);
+
+  useEffect(() => {
+    if (mode !== "content") return;
+    if (query.length < 2) {
+      setSearchResults(null);
+      return;
+    }
+
+    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+      .then((res) => res.json())
+      .then((res) => {
+       console.log(res);
+
+       const matched = new Set(res);
+       setSearchResults(data.filter((b) => matched.has(b.attrpath)));
+    });
+  }, [query, mode, data]);
 
   const displayed = useMemo(() => {
+    if (mode === "content") {
+      return searchResults ?? [];
+    }
     return filteredData;
-  }, [filteredData]);
+  }, [mode, filteredData, searchResults]);
 
 
   if (data.length === 0) {
@@ -134,6 +156,15 @@ export default function App() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+          <div className="mode-type">
+            mode:
+            <button onClick={() =>
+              setMode((m) => (m === "name" ? "content" : "name"))
+            }>
+            {mode === "name" ? "name" : "content"}
+          </button>
+
+          </div>
         </div>
       
         <div className="panel panel-left-bottom">
