@@ -1,3 +1,17 @@
+@font-face {
+  font-family: "Route159";
+  src: url("/route159/Route159-Regular.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Route159";
+  src: url("/route159/Route159-Bold.woff") format("woff");
+  font-weight: bold;
+  font-style: normal;
+}
+
 body {
   height: 100vh;
   margin: 0;
@@ -5,6 +19,8 @@ body {
   font-size: 14px;
   background-color: #050b18;
   color: white;
+
+  font-family: "Route159", sans-serif;
 }
 
 #root {
@@ -14,7 +30,16 @@ body {
   gap: 1em;
 }
 
-h2, p {
+::selection {
+  color: black;
+  background: #b7cefd;
+}
+
+h2 {
+  font-weight: bold;
+}
+
+h2, p, pre {
   margin: 0;
 }
 
@@ -24,12 +49,15 @@ a {
 
 .panel {
   &-dual-view, &-left, &-right {
+    box-sizing: border-box;
     height: 100%;
     display: flex;
     gap: 1em;
   }
 
   &-left, &-right {
+    padding: 1em;
+    border: 1px solid white;
     width: 100%;
     flex-direction: column;
     overflow: clip;
@@ -37,18 +65,48 @@ a {
 }
 
 .build-entry {
+  padding: 5px;
+
+  width: inherit;
+  height: inherit;
+
   display: flex;
   align-items: center;
   gap: 1ch;
+
+  background: none;
+  border: none;
+  color: inherit;
+
+  &-current {
+    background: #28395f;
+  }
+
+  &:hover span.attrpath {
+    text-decoration: underline;
+  }
+
+  span.attrpath {
+    text-align: left;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap: nowrap;
+  }
 
   & > span:nth-child(2) {
     color: grey;
   }
 }
 
-
 .log-viewer {
+  font-family: "Jetbrains Mono", monospace;
   word-break: break-all;
   text-wrap: wrap;
   overflow-y: scroll;
+}
+
+.separator {
+  width: 300%;
+  border-top: 1px solid white;
+  transform: translateX(-50%);
 }

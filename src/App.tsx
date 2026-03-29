@@ -15,22 +15,34 @@ type ApiResponse = Build[];
 function BuildEntry({
   index,
   builds,
+  selected,
   onSelect,
   style
-}: RowComponentProps<{ builds: Build[]; onSelect: (b: Build) => void }>) {
+}: RowComponentProps<{
+  builds: Build[];
+  selected: string | null;
+  onSelect: (b: Build) => void }>
+) {
   let entry = builds[index];
+  let isCurrent = selected === entry.attrpath;
 
   return (
-    <div className="build-entry" style={style} onClick={() => onSelect(entry)}>
-      <span>{entry.attrpath}</span>
-      <span>({entry.status})</span>
-    </div>
+    <li style={style}>
+      <button
+        className={"build-entry " + (isCurrent ? "build-entry-current" : "")}
+        onClick={() => onSelect(entry)}
+      >
+        <span className="attrpath">{entry.attrpath}</span>
+        <span className="status">({entry.status})</span>
+      </button>
+    </li>
   );
 }
 
-function BuildsTable({ builds, top, onSelect }: {
+function BuildsTable({ builds, top, selected, onSelect }: {
   builds: Build[];
   top: string | null;
+  selected: string | null;
   onSelect: (b: Build) => void;
 }) {
   const listRef = useListRef(null);
@@ -58,8 +70,8 @@ function BuildsTable({ builds, top, onSelect }: {
       className="build-entries"
       rowComponent={BuildEntry}
       rowCount={builds.length}
-      rowHeight={25}
-      rowProps={{ builds, onSelect }}
+      rowHeight={29}
+      rowProps={{ builds, selected, onSelect }}
     />
   );
 }
@@ -97,6 +109,7 @@ export default function App() {
         <BuildsTable
           builds={data}
           top={selected}
+          selected={selectedLog}
           onSelect={(b) => setSelectedLog(b.attrpath)}
         />
       </div>
@@ -105,7 +118,8 @@ export default function App() {
         <h2>Log Viewer</h2>
         {selectedLog ? (
           <>
-            <p>viewing { selectedLog }</p>
+            <p>Viewing { selectedLog }</p>
+            <span className="separator"></span>
             <pre className="log-viewer">{logContent}</pre>
           </>
         ) : (
