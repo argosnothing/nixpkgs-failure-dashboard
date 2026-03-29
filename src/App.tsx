@@ -8,6 +8,7 @@ interface Build {
   id: number;
   attrpath: string;
   status: "success" | "failed" | "timeout";
+  hydra_id: number | null;
 }
 
 type ApiResponse = Build[];
@@ -81,23 +82,19 @@ export default function App() {
   const selected = searchParams.get("selected");
 
   const [data, setData] = useState<Build[]>([]);
-  const [selectedLog, setSelectedLog] = useState<string | null>(selected);
+  const [selectedBuild, setSelectedBuild] = useState<Build | null>(null);
   const [logContent, setLogContent] = useState<string>("");
 
   useEffect(() => {
     fetch(`/api/builds`)
       .then((res) => res.json())
-      .then((res: ApiResponse) => setData(res));
+      .then((res: ApiResponse) => {
+        setData(res);
+        if (!selected) return;
+        let idx = res.findIndex((b) => b.attrpath == selected);
+        selectBuild(res[idx]);
+      });
   }, []);
-
-  useEffect(() => {
-    if (!selectedLog) return;
-
-    fetch(`/build-logs/${selectedLog}.log`)
-      .then((res) => res.text())
-      .then((text) => setLogContent(text))
-      .then(() => setSearchParams({ selected: selectedLog }));
-  }, [selectedLog]);
 
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<"name" | "content">("name");
@@ -112,6 +109,15 @@ export default function App() {
       b.attrpath.toLowerCase().includes(q)
     );
   }, [data, query, mode]);
+
+  const selectBuild = (b: Build) => {
+    setSelectedBuild(b);
+    setSearchParams({ selected: b.attrpath });
+
+    fetch(`/build-logs/${b.attrpath}.log`)
+      .then((res) => res.text())
+      .then((text) => setLogContent(text))
+  }
 
   useEffect(() => {
     if (mode !== "content") return;
@@ -172,17 +178,24 @@ export default function App() {
           <BuildsTable
             builds={displayed}
             top={selected}
-            selected={selectedLog}
-            onSelect={(b) => setSelectedLog(b.attrpath)}
+            selected={selectedBuild?.attrpath ?? null}
+            onSelect={selectBuild}
           />
         </div>
       </div>
 
       <div className="panel panel-right">
         <h2>Log Viewer</h2>
-        {selectedLog ? (
+        {selectedBuild ? (
           <>
-            <p>Viewing { selectedLog }</p>
+            <div className="log-meta">
+              <p>
+                Viewing { selectedBuild.attrpath }
+              </p>
+              { selectedBuild.hydra_id &&
+                <a href={`https://hydra.nixos.org/build/${ selectedBuild.hydra_id }`}>hydra</a>
+              }
+            </div>
             <span className="separator"></span>
             <pre className="log-viewer">{logContent}</pre>
           </>

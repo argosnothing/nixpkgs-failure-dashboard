@@ -187,3 +187,10 @@ button {
 .spinning-nix {
   animation: spin 4s linear infinite;
 }
+
+.log-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1em;
+}

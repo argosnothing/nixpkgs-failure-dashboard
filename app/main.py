@@ -18,12 +18,12 @@ app.mount("/build-logs", StaticFiles(directory="build-logs"))
 @app.get("/api/builds")
 def list_builds(db: Session = Depends(get_db)):
     builds_rows = db.execute(
-      select(Build.attrpath, Build.status)
+      select(Build.attrpath, Build.status, Build.hydra_id)
       .where(Build.status == "failed")
     ).all()
 
     output = [
-        dict(attrpath=b.attrpath, status=b.status)
+        dict(attrpath=b.attrpath, status=b.status, hydra_id=b.hydra_id)
         for b in builds_rows
     ]
 

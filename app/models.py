@@ -9,3 +9,5 @@ class Build(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     attrpath: Mapped[str]
     status: Mapped[str]
+
+    hydra_id: Mapped[int | None]
