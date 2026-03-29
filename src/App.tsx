@@ -169,17 +169,19 @@ export default function App() {
     <div className="panel-dual-view">
       <div className="panel-left">
         <div className="panel panel-left-top">
+          <label>Search</label>
           <input
-            placeholder="Search logs (3+ characters)..."
+            placeholder="hash mismatch"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            maxLength={64}
           />
           <div className="mode-type">
             mode:
             <button onClick={() =>
               setMode((m) => (m === "name" ? "content" : "name"))
             }>
-            {mode === "name" ? "name" : "content"}
+            {mode === "name" ? "name" : "grep"}
           </button>
 
           </div>

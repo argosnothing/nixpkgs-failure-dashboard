@@ -68,7 +68,13 @@ button {
 
   &-left-top {
     display: flex;
+    align-items: center;
     gap: 1em;
+
+    label {
+      text-wrap: nowrap;
+      font-weight: bold;
+    }
 
     input {
       color: white;
