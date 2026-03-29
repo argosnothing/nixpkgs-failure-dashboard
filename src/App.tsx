@@ -100,7 +100,12 @@ export default function App() {
   }, [selectedLog]);
 
   if (data.length === 0)
-    return <p>Loading...</p>;
+    return (
+      <div className="loading">
+        <img className="spinning-nix" src="/nix.svg" height="24px" width="24px" alt=""/>
+        <p>Loading (this might take a few seconds)...</p>
+      </div>
+    );
 
   return (
     <div className="panel-dual-view">

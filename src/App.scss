@@ -127,3 +127,22 @@ a {
     }
   }
 }
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinning-nix {
+  animation: spin 4s linear infinite;
+}
