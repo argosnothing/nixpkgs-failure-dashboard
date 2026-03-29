@@ -65,11 +65,11 @@ function BuildsTable({ builds, top, onSelect }: {
 }
 
 export default function App() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const selected = searchParams.get("selected");
 
   const [data, setData] = useState<Build[]>([]);
-  const [selectedLog, setSelectedLog] = useState<string | null>(null);
+  const [selectedLog, setSelectedLog] = useState<string | null>(selected);
   const [logContent, setLogContent] = useState<string>("");
 
   useEffect(() => {
@@ -83,7 +83,8 @@ export default function App() {
 
     fetch(`/build-logs/${selectedLog}.log`)
       .then((res) => res.text())
-      .then((text) => setLogContent(text));
+      .then((text) => setLogContent(text))
+      .then(() => setSearchParams({ selected: selectedLog }));
   }, [selectedLog]);
 
   if (data.length === 0)
