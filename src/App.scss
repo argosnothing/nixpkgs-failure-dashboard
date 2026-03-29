@@ -110,3 +110,20 @@ a {
   border-top: 1px solid white;
   transform: translateX(-50%);
 }
+
+@media (max-width: 1240px) {
+  .panel {
+    &-dual-view {
+      flex-direction: column;
+    }
+
+    &-left {
+      min-height: 0;
+    }
+
+    &-right {
+      flex: 1;
+      max-height: 50%;
+    }
+  }
+}
