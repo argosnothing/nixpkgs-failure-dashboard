@@ -121,19 +121,31 @@ export default function App() {
 
   useEffect(() => {
     if (mode !== "content") return;
-    if (query.length < 2) {
-      setSearchResults(null);
+    if (query.length < 3) {
+      setSearchResults(data);
       return;
     }
 
-    fetch(`/api/search?q=${encodeURIComponent(query)}`)
-      .then((res) => res.json())
-      .then((res) => {
-       console.log(res);
+    const controller = new AbortController();
 
-       const matched = new Set(res);
-       setSearchResults(data.filter((b) => matched.has(b.attrpath)));
-    });
+    const id = setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+        signal: controller.signal,
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          const matched = new Set(res);
+          setSearchResults(data.filter((b) => matched.has(b.attrpath)));
+        })
+        .catch((e) => {
+          if (e.name !== "AbortError") console.error(e);
+        });
+    }, 300);
+
+    return () => {
+      controller.abort();
+      clearTimeout(id);
+    };
   }, [query, mode, data]);
 
   const displayed = useMemo(() => {
@@ -158,7 +170,7 @@ export default function App() {
       <div className="panel-left">
         <div className="panel panel-left-top">
           <input
-            placeholder="Search logs..."
+            placeholder="Search logs (3+ characters)..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />

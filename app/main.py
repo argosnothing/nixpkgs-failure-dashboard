@@ -31,7 +31,7 @@ def list_builds(db: Session = Depends(get_db)):
 
 
 @app.get("/api/search")
-def search_logs(q: str = Query(..., min_length=2, max_length=100)):
+def search_logs(q: str = Query(..., min_length=3, max_length=100)):
     cmd = (
         "rg",
         "--fixed-strings",
