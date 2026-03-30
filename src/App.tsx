@@ -195,12 +195,15 @@ export default function App() {
             />
             <div className="mode-type">
               mode:
-              <button onClick={() =>
-                setMode((m) => (m === "name" ? "content" : "name"))
-              }>
-              {mode === "name" ? "name" : "grep"}
-            </button>
-
+              <button
+                className={"search-mode " + (mode === "name" ? " selected" : "")}
+                onClick={() => setMode("name")}
+              >name</button>
+              /
+              <button
+                className={"search-mode " + (mode === "content" ? " selected" : "")}
+                onClick={() => setMode("content")}
+              >grep</button>
             </div>
           </div>
       

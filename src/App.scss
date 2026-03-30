@@ -47,11 +47,19 @@ a {
    color: #a4d5f7;
 }
 
-button {
+.search-mode {
   color: white;
-  background-color: #3b5487;
   border: none;
-  padding: .5em 1em;
+  background: none;
+
+  &.selected {
+    text-decoration: underline;
+    color: #b7cefd;
+  }
+
+  &:not(.selected):hover {
+    text-decoration: underline;
+  }
 }
 
 .panel {
