@@ -3,6 +3,7 @@ import csv
 import io
 import os
 import pathlib
+import re
 import urllib.request
 
 from .db import get_db, reset_db
@@ -47,6 +48,7 @@ def main():
 
     reset_db()
     hydra_ids = fetch_hydra_ids()
+    count = 0
 
     with contextmanager(get_db)() as session:
         for logfile in logs:
@@ -57,13 +59,27 @@ def main():
             if get_status(log) != "failed":
                 continue
 
+            if (
+                "error: Refusing to evaluate package" in log
+                or "No space left on device" in log
+                or "/root/nixpkgs-failure" in log
+                or log == "@@@ [FAIL] @@@\n"
+            ):
+                continue
+
+            matches = re.findall("error: attribute '.*' missing\n", log)
+            if matches:
+                continue
+
             build = Build(
                 attrpath=attrpath,
                 hydra_id=hydra_ids.get(attrpath)
             )
 
             builds.append(build)
+            count += 1
 
+        print("Registered", count, "packages")
         session.add_all(builds)
         session.commit()
 
