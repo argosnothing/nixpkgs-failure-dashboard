@@ -54,10 +54,11 @@ def main():
             print("processing", attrpath)
 
             log = logfile.read_bytes().decode(errors="ignore")
+            if get_status(log) != "failed":
+                continue
 
             build = Build(
                 attrpath=attrpath,
-                status=get_status(log),
                 hydra_id=hydra_ids.get(attrpath)
             )
 

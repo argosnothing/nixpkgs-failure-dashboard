@@ -7,7 +7,6 @@ import "./App.scss";
 interface Build {
   id: number;
   attrpath: string;
-  status: "success" | "failed" | "timeout";
   hydra_id: number | null;
 }
 
@@ -43,7 +42,6 @@ function BuildEntry({
         onClick={() => onSelect(entry)}
       >
         <span className="attrpath">{entry.attrpath}</span>
-        <span className="status">({entry.status})</span>
       </button>
     </li>
   );
