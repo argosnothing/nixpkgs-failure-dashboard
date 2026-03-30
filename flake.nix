@@ -29,6 +29,8 @@
     in {
       default = pkgs.mkShell {
         packages = with pkgs; [
+          jq
+          ripgrep
           py-env
           sqlite
           nodejs
