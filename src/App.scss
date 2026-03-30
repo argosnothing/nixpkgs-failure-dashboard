@@ -117,6 +117,8 @@ button {
   &-vsplit {
     display: flex;
     justify-content: space-between;
+    flex-flow: wrap;
+    font-size: 12px;
     gap: .5em;
   }
 }
