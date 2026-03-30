@@ -1,4 +1,6 @@
+from collections import defaultdict
 from contextlib import contextmanager
+
 import csv
 import io
 import os
@@ -8,6 +10,7 @@ import urllib.request
 
 from .db import get_db, reset_db
 from .models import Build
+from .tagging import CHECKS
 
 LOG_DIR = pathlib.Path("build-logs")
 
@@ -38,6 +41,20 @@ def get_status(log: str) -> str:
     return "failed"
 
 
+
+def is_hash_mismatch(log: str) -> bool:
+    return "error: hash mismatch in fixed-output derivation" in log
+
+
+
+def classify_log(log: str) -> str:
+    for name, check in CHECKS:
+        if check(log):
+            return name
+
+    return "unknown"
+
+
 def main():
     builds = []
     logs = sorted(
@@ -49,6 +66,8 @@ def main():
     reset_db()
     hydra_ids = fetch_hydra_ids()
     count = 0
+
+    per_tags = defaultdict(list)
 
     with contextmanager(get_db)() as session:
         for logfile in logs:
@@ -73,15 +92,21 @@ def main():
 
             build = Build(
                 attrpath=attrpath,
-                hydra_id=hydra_ids.get(attrpath)
+                hydra_id=hydra_ids.get(attrpath),
+                tag=classify_log(log)
             )
 
+            per_tags[build.tag].append(build)
             builds.append(build)
             count += 1
 
         print("Registered", count, "packages")
         session.add_all(builds)
         session.commit()
+
+        print("\nTagged:")
+        for tag, vals in per_tags.items():
+            print(f"- {tag}:", len(vals))
 
 
 if __name__ == "__main__":
