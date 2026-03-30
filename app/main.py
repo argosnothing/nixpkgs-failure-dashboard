@@ -1,5 +1,6 @@
 import orjson
 import subprocess
+import pathlib
 import uvicorn
 
 from fastapi import Depends, FastAPI, Query, Response
@@ -22,10 +23,13 @@ def list_builds(db: Session = Depends(get_db)):
       .where(Build.status == "failed")
     ).all()
 
-    output = [
-        dict(attrpath=b.attrpath, status=b.status, hydra_id=b.hydra_id)
-        for b in builds_rows
-    ]
+    output = {
+        "commit": orjson.loads(pathlib.Path("last-commit.json").read_text()),
+        "builds": [
+            dict(attrpath=b.attrpath, status=b.status, hydra_id=b.hydra_id)
+            for b in builds_rows
+        ]
+    }
 
     return Response(orjson.dumps(output), media_type="application/json")
 

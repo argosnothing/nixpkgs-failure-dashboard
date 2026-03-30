@@ -12,6 +12,7 @@ build-logs
 packages.json
 packages
 builds.db
+last-commit.json
 
 # front
 node_modules

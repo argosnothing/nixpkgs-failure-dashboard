@@ -59,6 +59,10 @@ button {
   border: 1px solid white;
   box-sizing: border-box;
 
+  &-dual-view {
+    overflow: hidden;
+  }
+
   &-left, &-right {
     width: 100%;
     display: flex;
@@ -98,10 +102,22 @@ button {
     flex: 1;
   }
 
-  &-dual-view, &-left, &-right {
+  &-hsplit {
+    box-sizing: border-box;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  &-hsplit, &-dual-view, &-left, &-right {
     height: 100%;
     display: flex;
     gap: 1em;
+  }
+
+  &-vsplit {
+    display: flex;
+    justify-content: space-between;
+    gap: .5em;
   }
 }
 
@@ -192,6 +208,12 @@ button {
 
 .spinning-nix {
   animation: spin 4s linear infinite;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: .5em;
 }
 
 .log-meta {

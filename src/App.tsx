@@ -11,7 +11,16 @@ interface Build {
   hydra_id: number | null;
 }
 
-type ApiResponse = Build[];
+interface Commit {
+  name: string;
+  rev: string;
+  date: string;
+}
+
+interface ApiResponse {
+  builds: Build[];
+  commit: Commit;
+}
 
 function BuildEntry({
   index,
@@ -82,6 +91,8 @@ export default function App() {
   const selected = searchParams.get("selected");
 
   const [data, setData] = useState<Build[]>([]);
+  const [commit, setCommit] = useState<Commit | null>(null);
+
   const [selectedBuild, setSelectedBuild] = useState<Build | null>(null);
   const [logContent, setLogContent] = useState<string>("");
 
@@ -89,10 +100,11 @@ export default function App() {
     fetch(`/api/builds`)
       .then((res) => res.json())
       .then((res: ApiResponse) => {
-        setData(res);
+        setData(res.builds);
         if (!selected) return;
-        let idx = res.findIndex((b) => b.attrpath == selected);
-        selectBuild(res[idx]);
+        let idx = res.builds.findIndex((b) => b.attrpath == selected);
+        selectBuild(res.builds[idx]);
+        setCommit(res.commit);
       });
   }, []);
 
@@ -117,6 +129,12 @@ export default function App() {
     fetch(`/build-logs/${b.attrpath}.log`)
       .then((res) => res.text())
       .then((text) => setLogContent(text))
+  }
+
+  const prettifyDate = (iso: string | null) => {
+    if (iso === null) return "";
+    const date = new Date(iso);
+    return date.toDateString();
   }
 
   useEffect(() => {
@@ -166,56 +184,74 @@ export default function App() {
   }
 
   return (
-    <div className="panel-dual-view">
-      <div className="panel-left">
-        <div className="panel panel-left-top">
-          <label>Search</label>
-          <input
-            placeholder="hash mismatch"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            maxLength={64}
-          />
-          <div className="mode-type">
-            mode:
-            <button onClick={() =>
-              setMode((m) => (m === "name" ? "content" : "name"))
-            }>
-            {mode === "name" ? "name" : "grep"}
-          </button>
+    <div className="panel-hsplit">
+      <div className="panel-dual-view">
+        <div className="panel-left">
+          <div className="panel panel-left-top">
+            <label>Search</label>
+            <input
+              placeholder="hash mismatch"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              maxLength={64}
+            />
+            <div className="mode-type">
+              mode:
+              <button onClick={() =>
+                setMode((m) => (m === "name" ? "content" : "name"))
+              }>
+              {mode === "name" ? "name" : "grep"}
+            </button>
 
+            </div>
+          </div>
+      
+          <div className="panel panel-left-bottom">
+            <h2>Builds ({displayed.length})</h2>
+            <BuildsTable
+              builds={displayed}
+              top={selected}
+              selected={selectedBuild?.attrpath ?? null}
+              onSelect={selectBuild}
+            />
           </div>
         </div>
-      
-        <div className="panel panel-left-bottom">
-          <h2>Builds ({displayed.length})</h2>
-          <BuildsTable
-            builds={displayed}
-            top={selected}
-            selected={selectedBuild?.attrpath ?? null}
-            onSelect={selectBuild}
-          />
+
+        <div className="panel panel-right">
+          <h2>Log Viewer</h2>
+          {selectedBuild ? (
+            <>
+              <div className="log-meta">
+                <p>
+                  Viewing { selectedBuild.attrpath }
+                </p>
+                { selectedBuild.hydra_id &&
+                  <a href={`https://hydra.nixos.org/build/${ selectedBuild.hydra_id }`}>hydra</a>
+                }
+              </div>
+              <span className="separator"></span>
+              <pre className="log-viewer">{logContent}</pre>
+            </>
+          ) : (
+            <p>Select a build to view its log</p>
+          )}
         </div>
       </div>
-
-      <div className="panel panel-right">
-        <h2>Log Viewer</h2>
-        {selectedBuild ? (
-          <>
-            <div className="log-meta">
-              <p>
-                Viewing { selectedBuild.attrpath }
-              </p>
-              { selectedBuild.hydra_id &&
-                <a href={`https://hydra.nixos.org/build/${ selectedBuild.hydra_id }`}>hydra</a>
-              }
-            </div>
-            <span className="separator"></span>
-            <pre className="log-viewer">{logContent}</pre>
-          </>
-        ) : (
-          <p>Select a build to view its log</p>
-        )}
+    
+      <div className="info panel-vsplit">
+        <div className="info">
+          <p>Last index: {prettifyDate(commit?.date ?? null)}</p>
+          @
+          <a href={`https://github.com/NixOS/nixpkgs/commit/${commit?.rev}`}>{commit?.name}</a>
+          -
+          <p>All the derivations are built by my tiny server, locally. x86_64-linux only.</p>
+        </div>
+        <div className="info">
+          Contribution is welcome.
+          <a href="https://github.com/Sigmanificient/nixpkgs-failure-dashboard">GitHub</a>
+          /
+          <a href="https://github.com/Sigmanificient/nixpkgs-failure-dashboard/issues/new">Report an issue</a>
+        </div>
       </div>
     </div>
   );
