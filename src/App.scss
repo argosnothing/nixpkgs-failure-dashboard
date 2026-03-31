@@ -81,6 +81,7 @@ a {
   &-tags {
     display: flex;
     flex-flow: column;
+    font-size: 12px;
     gap: .5em;
 
     .tag-item {
@@ -104,10 +105,6 @@ a {
       &-name {
         text-wrap: nowrap;
       }
-
-      &-count {
-        font-size: 12px;
-      }
     }
   }
 
@@ -116,6 +113,14 @@ a {
     display: flex;
     flex-direction: column;
     overflow: clip;
+  }
+
+  &-left {
+    flex: 1;
+  }
+
+  &-right {
+    max-width: 50vw;
   }
 
   &-left-top {
@@ -179,6 +184,7 @@ a {
 
 .build-entry {
   padding: 5px 8px;
+  font-size: 14px;
 
   width: inherit;
   height: inherit;
@@ -217,6 +223,8 @@ a {
   word-break: break-all;
   text-wrap: wrap;
   overflow-y: scroll;
+  font-size: 12px;
+  height: 100%;
 }
 
 .separator {
@@ -238,6 +246,7 @@ a {
     &-right {
       flex: 1;
       max-height: 33vh;
+      max-width: 100%;
     }
 
     &-tags {
