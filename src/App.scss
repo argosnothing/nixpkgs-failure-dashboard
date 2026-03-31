@@ -84,6 +84,11 @@ a {
       padding: .5em;
       user-select: none;
 
+      &.active {
+        background-color: #b7cefd;
+        color: black;
+      }
+
       &-name {
         text-wrap: nowrap;
       }

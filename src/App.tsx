@@ -101,7 +101,7 @@ export default function App() {
       .then((res: ApiResponse) => {
         setData(res.builds);
 
-        const counts: Record<string, number> = {};
+        const counts: Record<string, number> = { "all": res.builds.length };
 
         for (const build of res.builds) {
           counts[build.tag] = (counts[build.tag] || 0) + 1;
@@ -123,6 +123,7 @@ export default function App() {
   const [searchResults, setSearchResults] = useState<Build[] | null>(null);
 
   const [tags, setTags] = useState<Record<string, number>>({});
+  const [activeTag, setActiveTag] = useState<string>("all");
 
   const filteredData = useMemo(() => {
     if (!query || mode !== "name") return data;
@@ -179,11 +180,13 @@ export default function App() {
   }, [query, mode, data]);
 
   const displayed = useMemo(() => {
-    if (mode === "content") {
-      return searchResults ?? [];
-    }
-    return filteredData;
-  }, [mode, filteredData, searchResults]);
+    let source = (mode === "content") ? (searchResults ?? []) : filteredData;
+
+    if (activeTag == "all")
+        return source;
+
+    return source.filter((b: Build) => b.tag == activeTag);
+  }, [mode, activeTag, filteredData, searchResults]);
 
 
   if (data.length === 0) {
@@ -204,7 +207,8 @@ export default function App() {
             .map(([name, count]) => (
               <div
                 key={name}
-                className="tag-item"
+                className={`tag-item ${activeTag === name ? "active" : ""}`}
+                onClick={() => setActiveTag(name)}
               >
                 <span className="tag-item-name">{name}</span>
                 <span className="tag-item-count">{count}</span>
