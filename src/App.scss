@@ -44,17 +44,22 @@ h2, p, pre {
 }
 
 a {
-   color: #a4d5f7;
+   color: #87adfa;
+
+   &:hover {
+     color: #b7cefd;
+   }
 }
 
 .search-mode {
   color: white;
   border: none;
   background: none;
+  padding: 5px 8px;
 
   &.selected {
-    text-decoration: underline;
-    color: #b7cefd;
+    background: #b7cefd;
+    color: black;
   }
 
   &:not(.selected):hover {
@@ -81,8 +86,12 @@ a {
       gap: 2em;
       justify-content: space-between;
       align-items: center;
-      padding: .5em;
+      padding: 5px 8px;
       user-select: none;
+
+      &:not(.active):hover > .tag-item-name {
+        text-decoration: underline;
+      }
 
       &.active {
         background-color: #b7cefd;
@@ -166,7 +175,7 @@ a {
 }
 
 .build-entry {
-  padding: 5px;
+  padding: 5px 8px;
 
   width: inherit;
   height: inherit;
@@ -179,11 +188,12 @@ a {
   border: none;
   color: inherit;
 
-  &-current {
-    background: #28395f;
+  &.current {
+    background: #b7cefd;
+    color: black;
   }
 
-  &:hover span.attrpath {
+  &:not(.current):hover span.attrpath {
     text-decoration: underline;
   }
 

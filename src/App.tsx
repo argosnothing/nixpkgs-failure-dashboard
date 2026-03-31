@@ -39,7 +39,7 @@ function BuildEntry({
   return (
     <li style={style}>
       <button
-        className={"build-entry " + (isCurrent ? "build-entry-current" : "")}
+        className={"build-entry " + (isCurrent ? "current" : "")}
         onClick={() => onSelect(entry)}
       >
         <span className="attrpath">{entry.attrpath}</span>
@@ -231,7 +231,6 @@ export default function App() {
                 className={"search-mode " + (mode === "name" ? " selected" : "")}
                 onClick={() => setMode("name")}
               >name</button>
-              /
               <button
                 className={"search-mode " + (mode === "content" ? " selected" : "")}
                 onClick={() => setMode("content")}
