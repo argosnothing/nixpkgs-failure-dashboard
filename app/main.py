@@ -19,13 +19,13 @@ app.mount("/build-logs", StaticFiles(directory="build-logs"))
 @app.get("/api/builds")
 def list_builds(db: Session = Depends(get_db)):
     builds_rows = db.execute(
-      select(Build.attrpath, Build.hydra_id)
+      select(Build.attrpath, Build.hydra_id, Build.tag)
     ).all()
 
     output = {
         "commit": orjson.loads(pathlib.Path("last-commit.json").read_text()),
         "builds": [
-            dict(attrpath=b.attrpath, hydra_id=b.hydra_id)
+            dict(attrpath=b.attrpath, hydra_id=b.hydra_id, tag=b.tag)
             for b in builds_rows
         ]
     }

@@ -8,6 +8,7 @@ interface Build {
   id: number;
   attrpath: string;
   hydra_id: number | null;
+  tag: string;
 }
 
 interface Commit {
@@ -99,6 +100,15 @@ export default function App() {
       .then((res) => res.json())
       .then((res: ApiResponse) => {
         setData(res.builds);
+
+        const counts: Record<string, number> = {};
+
+        for (const build of res.builds) {
+          counts[build.tag] = (counts[build.tag] || 0) + 1;
+        }
+
+        setTags(counts);
+
         if (!selected) return;
         let idx = res.builds.findIndex((b) => b.attrpath == selected);
 
@@ -111,6 +121,8 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<"name" | "content">("name");
   const [searchResults, setSearchResults] = useState<Build[] | null>(null);
+
+  const [tags, setTags] = useState<Record<string, number>>({});
 
   const filteredData = useMemo(() => {
     if (!query || mode !== "name") return data;
@@ -186,6 +198,20 @@ export default function App() {
   return (
     <div className="panel-hsplit">
       <div className="panel-dual-view">
+        <div className="panel panel-tags">
+          {Object.entries(tags)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, count]) => (
+              <div
+                key={name}
+                className="tag-item"
+              >
+                <span className="tag-item-name">{name}</span>
+                <span className="tag-item-count">{count}</span>
+              </div>
+            ))}
+        </div>
+
         <div className="panel-left">
           <div className="panel panel-left-top">
             <label>Search</label>

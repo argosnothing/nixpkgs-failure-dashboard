@@ -71,6 +71,29 @@ a {
     overflow: hidden;
   }
 
+  &-tags {
+    display: flex;
+    flex-flow: column;
+    gap: .5em;
+
+    .tag-item {
+      display: flex;
+      gap: 2em;
+      justify-content: space-between;
+      align-items: center;
+      padding: .5em;
+      user-select: none;
+
+      &-name {
+        text-wrap: nowrap;
+      }
+
+      &-count {
+        font-size: 12px;
+      }
+    }
+  }
+
   &-left, &-right {
     width: 100%;
     display: flex;
