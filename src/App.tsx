@@ -101,6 +101,8 @@ export default function App() {
         setData(res.builds);
         if (!selected) return;
         let idx = res.builds.findIndex((b) => b.attrpath == selected);
+
+        if (idx == -1) return;
         selectBuild(res.builds[idx]);
         setCommit(res.commit);
       });
