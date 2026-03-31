@@ -11,7 +11,6 @@ from sqlalchemy import select
 from .db import get_db
 from .models import Build
 
-
 app = FastAPI()
 app.mount("/build-logs", StaticFiles(directory="build-logs"))
 
@@ -19,7 +18,7 @@ app.mount("/build-logs", StaticFiles(directory="build-logs"))
 @app.get("/api/builds")
 def list_builds(db: Session = Depends(get_db)):
     builds_rows = db.execute(
-      select(Build.attrpath, Build.hydra_id, Build.tag)
+        select(Build.attrpath, Build.hydra_id, Build.tag)
     ).all()
 
     output = {
@@ -27,7 +26,7 @@ def list_builds(db: Session = Depends(get_db)):
         "builds": [
             dict(attrpath=b.attrpath, hydra_id=b.hydra_id, tag=b.tag)
             for b in builds_rows
-        ]
+        ],
     }
 
     return Response(orjson.dumps(output), media_type="application/json")

@@ -27,10 +27,7 @@ def fetch_hydra_ids() -> dict[str, int]:
         content = resp.read().decode()
 
     reader = csv.DictReader(io.StringIO(content))
-    return {
-        row["name"]: int(row["id"])
-        for row in reader
-    }
+    return {row["name"]: int(row["id"]) for row in reader}
 
 
 def get_status(log: str) -> str:
@@ -41,10 +38,8 @@ def get_status(log: str) -> str:
     return "failed"
 
 
-
 def is_hash_mismatch(log: str) -> bool:
     return "error: hash mismatch in fixed-output derivation" in log
-
 
 
 def classify_log(log: str) -> str:
@@ -93,7 +88,7 @@ def main():
             build = Build(
                 attrpath=attrpath,
                 hydra_id=hydra_ids.get(attrpath),
-                tag=classify_log(log)
+                tag=classify_log(log),
             )
 
             per_tags[build.tag].append(build)
