@@ -88,6 +88,7 @@ a {
       align-items: center;
       padding: 5px 8px;
       user-select: none;
+      height: min-content;
 
       &:not(.active):hover > .tag-item-name {
         text-decoration: underline;
@@ -234,7 +235,12 @@ a {
 
     &-right {
       flex: 1;
-      max-height: 50%;
+      max-height: 33vh;
+    }
+
+    &-tags {
+      max-height: 15vh;
+      overflow: scroll;
     }
   }
 }
