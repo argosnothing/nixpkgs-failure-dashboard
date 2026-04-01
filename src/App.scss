@@ -287,3 +287,17 @@ a {
   align-items: center;
   gap: 1em;
 }
+
+.btn {
+  border: 1px solid transparent;
+  padding: 5px 8px;
+  background: #b7cefd;
+  color: black;
+
+  &:hover {
+    background: none;
+    color: #b7cefd;
+    border: 1px solid #b7cefd;
+
+  }
+}

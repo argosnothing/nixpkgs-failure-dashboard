@@ -188,6 +188,11 @@ export default function App() {
     return source.filter((b: Build) => b.tag == activeTag);
   }, [mode, activeTag, filteredData, searchResults]);
 
+  const copyAttrpaths = () => {
+    navigator.clipboard.writeText(
+      displayed.map(build => build.attrpath).join('\n')
+    );
+  };
 
   if (data.length === 0) {
     return (
@@ -239,7 +244,10 @@ export default function App() {
           </div>
       
           <div className="panel panel-left-bottom">
-            <h2>Builds ({displayed.length})</h2>
+            <div className="panel-vsplit">
+              <h2>Results({displayed.length})</h2>
+              <button className="btn" onClick={copyAttrpaths}>copy</button>
+            </div>
             <BuildsTable
               builds={displayed}
               top={selected}
