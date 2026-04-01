@@ -17,6 +17,9 @@ build_package() {
 
   echo "Starting build: $name"
   out_log="$LOG_DIR/${name}.log"
+  if [[ -f "$out_log" ]] && tail -n 1 "$out_log" | grep -q "@@@ \[.*\] @@@"; then
+    return 0
+  fi
 
   NIXPKGS_ALLOW_UNFREE=1 timeout "$TIMEOUT" \
     nix-build -E "(import $NIXPKGS_PATH {}).${name}" \
