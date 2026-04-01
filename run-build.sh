@@ -18,7 +18,7 @@ build_package() {
   echo "Starting build: $name"
   out_log="$LOG_DIR/${name}.log"
 
-  timeout "$TIMEOUT" \
+  NIXPKGS_ALLOW_UNFREE=1 timeout "$TIMEOUT" \
     nix-build -E "(import $NIXPKGS_PATH {}).${name}" \
       --max-jobs 1 \
       --cores 1 \
