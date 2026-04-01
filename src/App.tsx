@@ -245,7 +245,7 @@ export default function App() {
       
           <div className="panel panel-left-bottom">
             <div className="panel-vsplit">
-              <h2>Results({displayed.length})</h2>
+              <h2>Results ({displayed.length})</h2>
               <button className="btn" onClick={copyAttrpaths}>copy</button>
             </div>
             <BuildsTable
