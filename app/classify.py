@@ -76,6 +76,7 @@ def main():
             if (
                 "error: Refusing to evaluate package" in log
                 or "No space left on device" in log
+                or "note: build failure may have been caused by lack of free disk space" in log
                 or "/root/nixpkgs-failure" in log
                 or log == "@@@ [FAIL] @@@\n"
             ):
