@@ -107,18 +107,60 @@ def hash_mismatch(log: str) -> bool:
     return "error: hash mismatch in fixed-output derivation" in log
 
 
+def haskell_dep_failure(log: str) -> bool:
+    return (
+        "Error: [Cabal-8010]" in log
+        and "Encountered missing or private dependencies:" in log
+    )
+
+
+def missing_header_file(log: str) -> bool:
+    return (
+        "#include <" in log
+        and "compilation terminated." in log
+        and ": No such file or directory" in log
+    )
+
+
+def autotools_configure(log: str) -> bool:
+    return (
+        "Running phase: updateAutotoolsGnuConfigScriptsPhase" in log
+        and "Running phase: configurePhase"
+        and "configure: erroor:" in log
+    )
+
+
+def sbcl_create_homeless_shelter(log: str) -> bool:
+    return (
+        "; compilation unit aborted" in log
+        and "BUILD FAILED: Can't create directory /homeless-shelter" in log
+    )
+
+
+def sbcl_compilation_fail(log: str) -> bool:
+    return (
+        "SBCL is free software, provided as is, with absolutely no warranty" in log
+        and "; compilation unit aborted" in log
+    )
+
+
 CHECKS: tuple[tuple[str, Callable[[str], bool]], ...] = (
     ("cmake/boost 1.89", cmake_boost),
     ("cmake/minimal-version-fail", cmake_minimal_version_fail),
     ("cmake/configure-error", cmake_configure_error),
-    ("other/c-compile-error", c_compile_error),
-    ("other/npm-dependency-failure", npm_dependency_failure),
+    ("c-compile-error", c_compile_error),
+    ("autotools-configure-error", autotools_configure),
+    ("sbcl-create-homeless-shelter", sbcl_create_homeless_shelter),
+    ("sbcl-compilation-fail", sbcl_compilation_fail),
+    ("npm-dependency-failure", npm_dependency_failure),
+    ("haskell-deps-failure", haskell_dep_failure),
     ("python/runtime-deps", python_runtime_deps_failure),
     ("python/missing-legacy-setup", python_missing_legacy_setup),
     ("python/import-error", python_import_error),
     ("python/backend-error", python_backend_error),
     ("python/build-deps-failure", python_build_deps_failure),
     ("python/pytest-failure", pytest_failure),
+    ("generic/missing-header", missing_header_file),
     ("generic/fetch-error", curl_fetch_error),
     ("generic/hash-mismatch", hash_mismatch),
     ("generic/hunk-failed", hunk_failed),
