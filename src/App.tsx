@@ -123,7 +123,7 @@ export default function App() {
   const [searchResults, setSearchResults] = useState<Build[] | null>(null);
 
   const [tags, setTags] = useState<Record<string, number>>({});
-  const [activeTag, setActiveTag] = useState<string>("all");
+  const [activeTag, setActiveTag] = useState<string>(searchParams.get("tag") ?? "all");
 
   const filteredData = useMemo(() => {
     if (!query || mode !== "name") return data;
