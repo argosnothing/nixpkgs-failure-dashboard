@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { List, useListRef, type RowComponentProps } from "react-window";
+import { List, useDynamicRowHeight, useListRef, type RowComponentProps } from "react-window";
 import { useSearchParams } from "react-router-dom";
 
 import "./App.scss";
@@ -131,6 +131,10 @@ function LogViewer({
     });
   }, [errorLineNumber]);
 
+  const rowHeight = useDynamicRowHeight({
+    defaultRowHeight: 20
+  });
+
   return (
     <>
       <div className="log-actions">
@@ -145,7 +149,7 @@ function LogViewer({
         className="log-viewer"
         rowComponent={LogLine}
         rowCount={logLines.length}
-        rowHeight={20}
+        rowHeight={rowHeight}
         rowProps={{ logLines, errorLineNumber }}
       />
     </>
