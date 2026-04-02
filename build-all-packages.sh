@@ -20,7 +20,16 @@ NIXPKGS_PATH=$(nix eval --impure --expr "
 
 if [ ! -f ".run" ]; then
 nix eval --impure --json --expr "
-  (import ./collect-packages.nix) { pkgs = import $NIXPKGS_PATH {}; }
+  (import ./collect-packages.nix) {
+    pkgs = import $NIXPKGS_PATH {
+      config = {
+        allowAliases = false;
+        allowUnfree = true;
+        cudaSupport = true;
+        recursionMode = \"hydra\";
+      };
+    };
+  }
 " -vv > packages.json
 cat packages.json | tr -d '["]' | tr ',' '\n' > packages
 touch .run
