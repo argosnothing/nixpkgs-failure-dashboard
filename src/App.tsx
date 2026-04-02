@@ -139,7 +139,7 @@ function LogViewer({
     <>
       <div className="log-actions">
         {errorLineNumber && (
-          <button className="jump-to-error" onClick={jumpToError}>
+          <button className="btn" onClick={jumpToError}>
             Jump to Error
           </button>
         )}

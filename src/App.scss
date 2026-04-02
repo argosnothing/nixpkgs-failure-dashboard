@@ -308,20 +308,6 @@ a {
   gap: 1em;
 }
 
-.jump-to-error {
-  background: #8b2d2d;
-  color: white;
-  border: none;
-  padding: 4px 12px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-
-  &:hover {
-    background: #a33;
-  }
-}
-
 .log-line-error {
   background: rgba(255, 80, 80, 0.2);
 }
