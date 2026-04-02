@@ -301,3 +301,23 @@ a {
 
   }
 }
+
+.log-actions {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.log-line {
+  padding: 0 4px;
+  line-height: 18px;
+
+  &.error::before {
+    content: '';
+    inset: -2px 2px;
+    position: absolute;
+    z-index: -1;
+    background: #592a2e;
+    overflow: visible !important;
+  }
+}

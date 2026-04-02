@@ -10,7 +10,7 @@ import urllib.request
 
 from .db import get_db, reset_db
 from .models import Build
-from .tagging import CHECKS
+from .tagging import ErrorCheck, TAG_CHECKS
 
 LOG_DIR = pathlib.Path("build-logs")
 
@@ -19,6 +19,10 @@ CSV_URL = (
     "Sigmanificient/nixpkgs-failure-notify"
     "/refs/heads/results"
     "/results/3-failures-x86_64-linux.csv"
+)
+
+GENERIC_ERROR_RE = re.compile(
+    r"(error:|Error:|ERROR|FAILED|fatal:|Failed)", re.IGNORECASE
 )
 
 
@@ -42,12 +46,26 @@ def is_hash_mismatch(log: str) -> bool:
     return "error: hash mismatch in fixed-output derivation" in log
 
 
-def classify_log(log: str) -> str:
-    for name, check in CHECKS:
-        if check(log):
-            return name
+def run_tag_check(log: str, check: ErrorCheck) -> int | None:
+    matched = re.search(check.pattern, log)
 
-    return "unknown"
+    if not matched:
+        return None
+
+    if check.hints and any(h not in log for h in check.hints):
+        return None
+
+    start, _ = matched.span()
+    return 1 + log[:start].count("\n")
+
+
+def find_error_and_tag(log: str) -> tuple[str, int | None]:
+    for check in TAG_CHECKS:
+        line_num = run_tag_check(log, check)
+        if line_num:
+            return check.name, line_num
+
+    return "unknown", 1
 
 
 def main():
@@ -86,10 +104,13 @@ def main():
             if matches:
                 continue
 
+            tag, error_line = find_error_and_tag(log)
+
             build = Build(
                 attrpath=attrpath,
                 hydra_id=hydra_ids.get(attrpath),
-                tag=classify_log(log),
+                tag=tag,
+                error_line_number=error_line,
             )
 
             per_tags[build.tag].append(build)
@@ -101,8 +122,9 @@ def main():
         session.commit()
 
         print("\nTagged:")
-        for tag, vals in per_tags.items():
-            print(f"- {tag}:", len(vals))
+        tag_names = set(t.name for t in TAG_CHECKS)
+        for tag in tag_names:
+            print(f"- {tag}:", len(per_tags[tag]))
 
 
 if __name__ == "__main__":

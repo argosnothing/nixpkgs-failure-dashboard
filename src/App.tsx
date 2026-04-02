@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { List, useListRef, type RowComponentProps } from "react-window";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { List, useDynamicRowHeight, useListRef, type RowComponentProps } from "react-window";
 import { useSearchParams } from "react-router-dom";
 
 import "./App.scss";
@@ -9,6 +9,7 @@ interface Build {
   attrpath: string;
   hydra_id: number | null;
   tag: string;
+  error_line_number: number | null;
 }
 
 interface Commit {
@@ -82,6 +83,76 @@ function BuildsTable({ builds, top, selected, onSelect }: {
       rowHeight={29}
       rowProps={{ builds, selected, onSelect }}
     />
+  );
+}
+
+function LogLine({
+  index,
+  logLines,
+  errorLineNumber,
+  style
+}: RowComponentProps<{
+  logLines: string[];
+  errorLineNumber: number | null;
+}>)
+{
+  const line = logLines[index];
+  const isError = index + 1 === errorLineNumber;
+
+  return (
+    <span
+      style={style}
+      className={"log-line " + (isError ? 'error' : '')}
+    >
+      {line}
+    </span>
+  );
+}
+
+function LogViewer({
+  logContent,
+  errorLineNumber,
+}: {
+  logContent: string;
+  errorLineNumber: number | null;
+}) {
+  const listRef = useListRef(null);
+  const logLines = useMemo(() => logContent.split('\n'), [logContent]);
+
+  const jumpToError = useCallback(() => {
+    if (!errorLineNumber) return;
+
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToRow({
+        align: "center",
+        behavior: "smooth",
+        index: errorLineNumber - 1,
+      });
+    });
+  }, [errorLineNumber]);
+
+  const rowHeight = useDynamicRowHeight({
+    defaultRowHeight: 20
+  });
+
+  return (
+    <>
+      <div className="log-actions">
+        {errorLineNumber && (
+          <button className="btn" onClick={jumpToError}>
+            Jump to Error
+          </button>
+        )}
+      </div>
+      <List
+        listRef={listRef}
+        className="log-viewer"
+        rowComponent={LogLine}
+        rowCount={logLines.length}
+        rowHeight={rowHeight}
+        rowProps={{ logLines, errorLineNumber }}
+      />
+    </>
   );
 }
 
@@ -270,7 +341,10 @@ export default function App() {
                 }
               </div>
               <span className="separator"></span>
-              <pre className="log-viewer">{logContent}</pre>
+              <LogViewer
+                logContent={logContent}
+                errorLineNumber={selectedBuild.error_line_number}
+              />
             </>
           ) : (
             <p>Select a build to view its log</p>
