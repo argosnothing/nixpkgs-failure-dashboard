@@ -225,7 +225,7 @@ export default function App() {
           <div className="panel panel-left-top">
             <label>Search</label>
             <input
-              placeholder="hash mismatch"
+              placeholder={mode === "name" ? "e.g. curl" : "e.g. hash mismatch (3 characters minimum)"}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               maxLength={64}
