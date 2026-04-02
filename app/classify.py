@@ -21,6 +21,25 @@ CSV_URL = (
     "/results/3-failures-x86_64-linux.csv"
 )
 
+DETECTORS = {
+    "rust": {
+        "markers": ["rustc", ".rs:"],
+        "patterns": [r"error\[\w+\]:", r"error:"],
+    },
+    "c": {
+        "markers": ["gcc", "g++"],
+        "patterns": [r":\d+:\d+: error:"],
+    },
+    "python": {
+        "markers": ["python", ".py:"],
+        "patterns": [r"File.*line \d+", r"Error:", r"Traceback"],
+    },
+    "cmake": {
+        "markers": ["cmake", "ninja"],
+        "patterns": [r"FAILED:", r"error:"],
+    },
+}
+
 
 def fetch_hydra_ids() -> dict[str, int]:
     with urllib.request.urlopen(CSV_URL) as resp:
@@ -48,6 +67,69 @@ def classify_log(log: str) -> str:
             return name
 
     return "unknown"
+
+
+def find_error_line(log: str) -> int | None:
+    for name, config in DETECTORS.items():
+        if any(marker in log for marker in config["markers"]):
+            result = find_specialized_error(log, config["patterns"])
+            if result is not None:
+                return result
+    return find_generic_error_from_end(log)
+
+
+def find_specialized_error(log: str, patterns: list[str]) -> int | None:
+    lines = log.split("\n")
+    compiled_patterns = [re.compile(p, re.IGNORECASE) for p in patterns]
+
+    for i in range(len(lines) - 1, -1, -1):
+        line = lines[i]
+
+        if any(
+            skip in line.lower()
+            for skip in ["warning", "deprecation", "note:", "license"]
+        ):
+            continue
+
+        for pattern in compiled_patterns:
+            if pattern.search(line):
+                phase_found = False
+                for j in range(i + 1, min(i + 20, len(lines))):
+                    if "Running phase:" in lines[j] or "@@@" in lines[j]:
+                        phase_found = True
+                        break
+
+                if not phase_found:
+                    return i + 1
+
+    return None
+
+
+def find_generic_error_from_end(log: str) -> int | None:
+    lines = log.split("\n")
+    pattern = re.compile(
+        r"(error:|Error:|ERROR|FAILED|fatal:|Failed)", re.IGNORECASE
+    )
+
+    # check starting from bottom of file and traverse backwards
+    # until an error is found, then check the next 20 lines of that error
+    # to confirm if the error was fatal or not
+    for i in range(len(lines) - 1, -1, -1):
+        line = lines[i]
+        if any(skip in line.lower() for skip in ["warning", "deprecation"]):
+            continue
+
+        if pattern.search(line):
+            phase_found = False
+            for j in range(i + 1, min(i + 20, len(lines))):
+                if "Running phase:" in lines[j] or "@@@" in lines[j]:
+                    phase_found = True
+                    break
+
+            if not phase_found:
+                return i + 1
+
+    return None
 
 
 def main():
@@ -86,10 +168,13 @@ def main():
             if matches:
                 continue
 
+            error_line = find_error_line(log)
+
             build = Build(
                 attrpath=attrpath,
                 hydra_id=hydra_ids.get(attrpath),
                 tag=classify_log(log),
+                error_line_number=error_line,
             )
 
             per_tags[build.tag].append(build)

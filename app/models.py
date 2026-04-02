@@ -9,5 +9,5 @@ class Build(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     attrpath: Mapped[str]
     hydra_id: Mapped[int | None]
-
     tag: Mapped[str]
+    error_line_number: Mapped[int | None]
