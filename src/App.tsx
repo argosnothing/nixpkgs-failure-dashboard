@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { List, useListRef, type RowComponentProps } from "react-window";
 import { useSearchParams } from "react-router-dom";
 
@@ -9,9 +9,8 @@ interface Build {
   attrpath: string;
   hydra_id: number | null;
   tag: string;
+  error_line_number: number | null;
 }
-
-const ERROR_PATTERN = /error:|Error:|ERROR|FAILED|fatal:|Failed|cannot build|build failed|error\[/i;
 
 interface Commit {
   name: string;
@@ -87,6 +86,72 @@ function BuildsTable({ builds, top, selected, onSelect }: {
   );
 }
 
+function LogLine({
+  index,
+  logLines,
+  errorLineNumber,
+  style
+}: RowComponentProps<{
+  logLines: string[];
+  errorLineNumber: number | null;
+}>)
+{
+  const line = logLines[index];
+  const isError = index + 1 === errorLineNumber;
+
+  return (
+    <div
+      style={style}
+      className={isError ? 'log-line-error' : undefined}
+    >
+      {line}
+    </div>
+  );
+}
+
+function LogViewer({
+  logContent,
+  errorLineNumber,
+}: {
+  logContent: string;
+  errorLineNumber: number | null;
+}) {
+  const listRef = useListRef(null);
+  const logLines = useMemo(() => logContent.split('\n'), [logContent]);
+
+  const jumpToError = useCallback(() => {
+    if (!errorLineNumber) return;
+
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToRow({
+        align: "center",
+        behavior: "smooth",
+        index: errorLineNumber - 1,
+      });
+    });
+  }, [errorLineNumber]);
+
+  return (
+    <>
+      <div className="log-actions">
+        {errorLineNumber && (
+          <button className="jump-to-error" onClick={jumpToError}>
+            Jump to Error
+          </button>
+        )}
+      </div>
+      <List
+        listRef={listRef}
+        className="log-viewer"
+        rowComponent={LogLine}
+        rowCount={logLines.length}
+        rowHeight={20}
+        rowProps={{ logLines, errorLineNumber }}
+      />
+    </>
+  );
+}
+
 export default function App() {
   const [searchParams, setSearchParams] = useSearchParams();
   const selected = searchParams.get("selected");
@@ -96,16 +161,6 @@ export default function App() {
 
   const [selectedBuild, setSelectedBuild] = useState<Build | null>(null);
   const [logContent, setLogContent] = useState<string>("");
-  const errorLineRef = useRef<HTMLDivElement>(null);
-
-  const logLines = useMemo(() => logContent.split('\n'), [logContent]);
-  const firstErrorIndex = useMemo(() => {
-    return logLines.findIndex(line => ERROR_PATTERN.test(line));
-  }, [logLines]);
-
-  const jumpToError = useCallback(() => {
-    errorLineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, []);
 
   useEffect(() => {
     fetch(`/api/builds`)
@@ -277,29 +332,15 @@ export default function App() {
                 <p>
                   Viewing { selectedBuild.attrpath }
                 </p>
-                <div className="log-actions">
-                  {firstErrorIndex !== -1 && (
-                    <button className="jump-to-error" onClick={jumpToError}>
-                      Jump to Error
-                    </button>
-                  )}
-                  { selectedBuild.hydra_id &&
-                    <a href={`https://hydra.nixos.org/build/${ selectedBuild.hydra_id }`}>hydra</a>
-                  }
-                </div>
+                { selectedBuild.hydra_id &&
+                  <a href={`https://hydra.nixos.org/build/${ selectedBuild.hydra_id }`}>hydra</a>
+                }
               </div>
               <span className="separator"></span>
-              <pre className="log-viewer">
-                {logLines.map((line, i) => (
-                  <div
-                    key={i}
-                    ref={i === firstErrorIndex ? errorLineRef : null}
-                    className={i === firstErrorIndex ? 'log-line-error' : undefined}
-                  >
-                    {line}
-                  </div>
-                ))}
-              </pre>
+              <LogViewer
+                logContent={logContent}
+                errorLineNumber={selectedBuild.error_line_number}
+              />
             </>
           ) : (
             <p>Select a build to view its log</p>
