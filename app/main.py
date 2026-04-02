@@ -30,17 +30,23 @@ async def lifespan(_: FastAPI):
             )
         ).all()
 
-    state["builds"] = [
-        {
+    state["builds"] = []
+    state["search"] = {}
+
+    for b in rows:
+        logfile = pathlib.Path("build-logs") / f"{b.attrpath}.log"
+
+        state["search"][b.attrpath] = logfile.read_bytes().decode(errors="ignore")
+
+        state["builds"].append({
             "attrpath": b.attrpath,
             "hydra_id": b.hydra_id,
             "tag": b.tag,
             "error_line_number": b.error_line_number,
-        }
-        for b in rows
-    ]
+        })
 
     print("Loaded", len(state["builds"]), "builds into the state")
+
     yield
     state.clear()
 
@@ -59,24 +65,9 @@ async def list_builds() -> Response:
 
 @app.get("/api/search")
 def search_logs(q: str = Query(..., min_length=3, max_length=100)):
-    cmd = (
-        "rg",
-        "--fixed-strings",
-        "--files-with-matches",
-        q,
-        "build-logs",
-    )
-
-    proc = subprocess.run(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        text=True,
-    )
-
     return [
-        f.removeprefix("build-logs/").removesuffix(".log")
-        for f in (proc.stdout or "").splitlines()
+        attrpath for attrpath, content in state["search"].items()
+        if q in content
     ]
 
 
