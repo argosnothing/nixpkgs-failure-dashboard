@@ -1,44 +1,60 @@
-import orjson
-import subprocess
 import pathlib
-import uvicorn
+import subprocess
+from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, Query, Response
+import orjson
+import uvicorn
+from fastapi import FastAPI, Query, Response
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 from .db import get_db
 from .models import Build
 
-app = FastAPI()
+state = {}
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    state["commit"] = orjson.loads(
+        pathlib.Path("last-commit.json").read_text()
+    )
+
+    with next(get_db()) as session:
+        rows = session.execute(
+            select(
+                Build.attrpath,
+                Build.hydra_id,
+                Build.tag,
+                Build.error_line_number,
+            )
+        ).all()
+
+    state["builds"] = [
+        {
+            "attrpath": b.attrpath,
+            "hydra_id": b.hydra_id,
+            "tag": b.tag,
+            "error_line_number": b.error_line_number,
+        }
+        for b in rows
+    ]
+
+    print("Loaded", len(state["builds"]), "builds into the state")
+    yield
+    state.clear()
+
+
+app = FastAPI(lifespan=lifespan)
 app.mount("/build-logs", StaticFiles(directory="build-logs"))
 
 
 @app.get("/api/builds")
-def list_builds(db: Session = Depends(get_db)):
-    builds_rows = db.execute(
-        select(
-            Build.attrpath,
-            Build.hydra_id,
-            Build.tag,
-            Build.error_line_number,
-        )
-    ).all()
-
-    output = {
-        "commit": orjson.loads(pathlib.Path("last-commit.json").read_text()),
-        "builds": [
-            dict(
-                attrpath=b.attrpath,
-                hydra_id=b.hydra_id,
-                tag=b.tag,
-                error_line_number=b.error_line_number
-            ) for b in builds_rows
-        ],
-    }
-
-    return Response(orjson.dumps(output), media_type="application/json")
+async def list_builds() -> Response:
+    return Response(
+        orjson.dumps({"commit": state["commit"], "builds": state["builds"]}),
+        media_type="application/json",
+    )
 
 
 @app.get("/api/search")
