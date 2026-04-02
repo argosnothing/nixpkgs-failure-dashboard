@@ -100,12 +100,12 @@ function LogLine({
   const isError = index + 1 === errorLineNumber;
 
   return (
-    <div
+    <span
       style={style}
-      className={isError ? 'log-line-error' : undefined}
+      className={"log-line " + (isError ? 'error' : '')}
     >
       {line}
-    </div>
+    </span>
   );
 }
 
