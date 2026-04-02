@@ -10,7 +10,7 @@ import urllib.request
 
 from .db import get_db, reset_db
 from .models import Build
-from .tagging import CHECKS
+from .tagging import ErrorCheck, TAG_CHECKS
 
 LOG_DIR = pathlib.Path("build-logs")
 
@@ -21,24 +21,9 @@ CSV_URL = (
     "/results/3-failures-x86_64-linux.csv"
 )
 
-DETECTORS = {
-    "rust": {
-        "markers": ["rustc", ".rs:"],
-        "patterns": [r"error\[\w+\]:", r"error:"],
-    },
-    "c": {
-        "markers": ["gcc", "g++"],
-        "patterns": [r":\d+:\d+: error:"],
-    },
-    "python": {
-        "markers": ["python", ".py:"],
-        "patterns": [r"File.*line \d+", r"Error:", r"Traceback"],
-    },
-    "cmake": {
-        "markers": ["cmake", "ninja"],
-        "patterns": [r"FAILED:", r"error:"],
-    },
-}
+GENERIC_ERROR_RE = re.compile(
+    r"(error:|Error:|ERROR|FAILED|fatal:|Failed)", re.IGNORECASE
+)
 
 
 def fetch_hydra_ids() -> dict[str, int]:
@@ -61,75 +46,26 @@ def is_hash_mismatch(log: str) -> bool:
     return "error: hash mismatch in fixed-output derivation" in log
 
 
-def classify_log(log: str) -> str:
-    for name, check in CHECKS:
-        if check(log):
-            return name
+def run_tag_check(log: str, check: ErrorCheck) -> int | None:
+    matched = re.search(check.pattern, log)
 
-    return "unknown"
+    if not matched:
+        return None
 
+    if check.hints and any(h not in log for h in check.hints):
+        return None
 
-def find_error_line(log: str) -> int | None:
-    for name, config in DETECTORS.items():
-        if any(marker in log for marker in config["markers"]):
-            result = find_specialized_error(log, config["patterns"])
-            if result is not None:
-                return result
-    return find_generic_error_from_end(log)
+    start, _ = matched.span()
+    return 1 + log[:start].count("\n")
 
 
-def find_specialized_error(log: str, patterns: list[str]) -> int | None:
-    lines = log.split("\n")
-    compiled_patterns = [re.compile(p, re.IGNORECASE) for p in patterns]
+def find_error_and_tag(log: str) -> tuple[str, int | None]:
+    for check in TAG_CHECKS:
+        line_num = run_tag_check(log, check)
+        if line_num:
+            return check.name, line_num
 
-    for i in range(len(lines) - 1, -1, -1):
-        line = lines[i]
-
-        if any(
-            skip in line.lower()
-            for skip in ["warning", "deprecation", "note:", "license"]
-        ):
-            continue
-
-        for pattern in compiled_patterns:
-            if pattern.search(line):
-                phase_found = False
-                for j in range(i + 1, min(i + 20, len(lines))):
-                    if "Running phase:" in lines[j] or "@@@" in lines[j]:
-                        phase_found = True
-                        break
-
-                if not phase_found:
-                    return i + 1
-
-    return None
-
-
-def find_generic_error_from_end(log: str) -> int | None:
-    lines = log.split("\n")
-    pattern = re.compile(
-        r"(error:|Error:|ERROR|FAILED|fatal:|Failed)", re.IGNORECASE
-    )
-
-    # check starting from bottom of file and traverse backwards
-    # until an error is found, then check the next 20 lines of that error
-    # to confirm if the error was fatal or not
-    for i in range(len(lines) - 1, -1, -1):
-        line = lines[i]
-        if any(skip in line.lower() for skip in ["warning", "deprecation"]):
-            continue
-
-        if pattern.search(line):
-            phase_found = False
-            for j in range(i + 1, min(i + 20, len(lines))):
-                if "Running phase:" in lines[j] or "@@@" in lines[j]:
-                    phase_found = True
-                    break
-
-            if not phase_found:
-                return i + 1
-
-    return None
+    return "unknown", 1
 
 
 def main():
@@ -168,12 +104,12 @@ def main():
             if matches:
                 continue
 
-            error_line = find_error_line(log)
+            tag, error_line = find_error_and_tag(log)
 
             build = Build(
                 attrpath=attrpath,
                 hydra_id=hydra_ids.get(attrpath),
-                tag=classify_log(log),
+                tag=tag,
                 error_line_number=error_line,
             )
 
@@ -186,8 +122,9 @@ def main():
         session.commit()
 
         print("\nTagged:")
-        for tag, vals in per_tags.items():
-            print(f"- {tag}:", len(vals))
+        tag_names = set(t.name for t in TAG_CHECKS)
+        for tag in tag_names:
+            print(f"- {tag}:", len(per_tags[tag]))
 
 
 if __name__ == "__main__":
