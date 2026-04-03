@@ -25,6 +25,23 @@ GENERIC_ERROR_RE = re.compile(
 )
 
 
+SKIP_BUILD_LOG_IF_MATCHES = (
+    "nix-store --add-fixed sha256",
+    "not supported for interpreter python",
+    "error: Refusing to evaluate package",
+    "/root/nixpkgs-failure",
+    "android_sdk.accept_license = true",
+    "dyalog.acceptLicense = true",
+    "input-fonts.acceptLicense",
+    "joypixels.acceptLicense = true",
+    "Microsoft Software License Terms are not accepted",
+    "nvidia.acceptLicense = true",
+    "sc2-headless.accept_license = true",
+    "segger-jlink.acceptLicense = true",
+    "xxe-pe.acceptLicense = true",
+)
+
+
 def fetch_hydra_ids() -> dict[str, int]:
     with urllib.request.urlopen(CSV_URL) as resp:
         content = resp.read().decode()
@@ -94,11 +111,8 @@ def main():
                 continue
 
             if (
-                "nix-store --add-fixed sha256" in log
-                or "not supported for interpreter python" in log
-                or "error: Refusing to evaluate package" in log
-                or "/root/nixpkgs-failure" in log
-                or log == "@@@ [FAIL] @@@\n"
+                any(text in log for text in SKIP_BUILD_LOG_IF_MATCHES)
+                or log == "@@@ [FAIL] @@@\n" # empty log
             ):
                 continue
 
