@@ -7,7 +7,7 @@ NIXPKGS_PATH="$2"
 
 JOBS=$(nproc)
 TIMEOUT=30
-
+BATCH_SIZE=5000
 LOG_DIR="build-logs"
 
 mkdir -p "$LOG_DIR"
@@ -15,6 +15,7 @@ mkdir -p "$LOG_DIR"
 build_package() {
   local name="$1"
   local escaped_name=$(python3 -c "print('.'.join(f'\"{x}\"' for x in '$name'.split('.')))")
+  local out_log="$LOG_DIR/${name}.log"
 
   echo "Starting build: $escaped_name"
   out_log="$LOG_DIR/${name}.log"
@@ -43,4 +44,16 @@ build_package() {
 export -f build_package
 export LOG_DIR TIMEOUT NIXPKGS_PATH
 
-cat "$INPUT_FILE" | xargs -I{} -P "$JOBS" bash -c 'build_package "$@"' _ {}
+CHUNK_DIR=$(mktemp -d)
+trap 'rm -rf "$CHUNK_DIR"' EXIT
+
+split -l "$BATCH_SIZE" --filter='tr "\n" "\0" > $FILE' "$INPUT_FILE" "$CHUNK_DIR/chunk_"
+
+for chunk in "$CHUNK_DIR"/chunk_*; do
+  cat "$chunk" | xargs -0 -I{} -P "$JOBS" bash -c 'build_package "$@"' _ {}
+
+  DISK_USAGE=$(df /nix/store --output=pcent | tail -1 | tr -dc '0-9')
+  if [ "$DISK_USAGE" -gt 50 ]; then
+    nix-collect-garbage -d
+  fi
+done
