@@ -1,16 +1,15 @@
-from collections import defaultdict
-from contextlib import contextmanager
-
 import csv
 import io
 import os
 import pathlib
 import re
 import urllib.request
+from collections import defaultdict
+from contextlib import contextmanager
 
 from .db import get_db, reset_db
 from .models import Build
-from .tagging import ErrorCheck, TAG_CHECKS
+from .tagging import TAG_CHECKS, ErrorCheck
 
 LOG_DIR = pathlib.Path("build-logs")
 
