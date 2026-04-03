@@ -94,7 +94,8 @@ def main():
                 continue
 
             if (
-                "not supported for interpreter python" in log
+                "nix-store --add-fixed sha256" in log
+                or "not supported for interpreter python" in log
                 or "error: Refusing to evaluate package" in log
                 or "/root/nixpkgs-failure" in log
                 or log == "@@@ [FAIL] @@@\n"
