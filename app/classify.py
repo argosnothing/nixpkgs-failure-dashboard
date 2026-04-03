@@ -94,7 +94,8 @@ def main():
                 continue
 
             if (
-                "error: Refusing to evaluate package" in log
+                "not supported for interpreter python" in log
+                or "error: Refusing to evaluate package" in log
                 or "/root/nixpkgs-failure" in log
                 or log == "@@@ [FAIL] @@@\n"
             ):
