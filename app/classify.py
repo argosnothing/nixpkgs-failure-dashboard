@@ -45,22 +45,25 @@ def is_hash_mismatch(log: str) -> bool:
     return "error: hash mismatch in fixed-output derivation" in log
 
 
-def run_tag_check(log: str, check: ErrorCheck) -> int | None:
-    matched = re.search(check.pattern, log)
+def run_tag_check(rev_log: str, check: ErrorCheck) -> int | None:
+    matched = re.search(check.pattern, rev_log)
 
     if not matched:
         return None
 
-    if check.hints and any(h not in log for h in check.hints):
+    if check.hints and any(h not in rev_log for h in check.hints):
         return None
 
     start, _ = matched.span()
-    return 1 + log[:start].count("\n")
+    return 1 + rev_log[start:].count("\n")
 
 
 def find_error_and_tag(log: str) -> tuple[str, int | None]:
+    lines = log.splitlines()
+    reversed_log = '\n'.join(lines[::-1])
+
     for check in TAG_CHECKS:
-        line_num = run_tag_check(log, check)
+        line_num = run_tag_check(reversed_log, check)
         if line_num:
             return check.name, line_num
 
