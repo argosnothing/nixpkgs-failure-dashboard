@@ -99,12 +99,12 @@ function LogLine({
   const isError = index + 1 === errorLineNumber;
 
   return (
-    <span
-      style={style}
-      className={"log-line " + (isError ? 'error' : '')}
-    >
-      {line}
-    </span>
+    <div style={style} className={"log-line " + (isError ? 'error' : '')}>
+      <span className="lineno" style={{ minWidth: `${logLines.length.toString().length}ch` }}>
+        {index + 1}
+      </span>
+      <span>{line}</span>
+    </div>
   );
 }
 

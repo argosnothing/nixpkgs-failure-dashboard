@@ -313,7 +313,7 @@ a {
   font-size: 12px;
   height: 100%;
 
-  & > span {
+  & > div {
     inset-inline: 1em !important;
     width: inherit !important;
     white-space: pre-wrap;
@@ -338,6 +338,15 @@ a {
   padding: 0 4px;
   box-sizing: border-box;
   line-height: 18px;
+  display: flex;
+  gap: 1ch;
+
+  span.lineno {
+    text-wrap: nowrap;
+    text-align: right;
+    white-space: nowrap;
+    opacity: .7;
+  }
 
   &.error::before {
     content: '';
