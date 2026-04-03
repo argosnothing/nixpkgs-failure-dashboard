@@ -26,15 +26,28 @@ GENERIC_ERROR_RE = re.compile(
 
 
 SKIP_BUILD_LOG_IF_MATCHES = (
-    "nix-store --add-fixed sha256",
-    "not supported for interpreter python",
     "error: Refusing to evaluate package",
-    "/root/nixpkgs-failure",
+    "error: attempt to call something which is not a function",
+    "error: cannot evaluate a function",
+    "error: expected a set but found a function",
+    "error: expression does not evaluate to a derivation",
+    "error: undefined variable",
+    # unsupported
+    "unsupported configuration: x86_64-linux",
+    "not supported for interpreter python",
+    # needs external input
+    "Please ensure you have set the username and token with config.nix",
+    "Quake 3 Arena requires the original pak0.pk3 file",
+    "nix-store --add-fixed",
+    "nix-prefetch-url",
+    "config.cplex.releasePath = /path/to/download",
+    # licenses based derivation
+    "Microsoft Software License Terms are not accepted",
+    "commercial license of Silverfort",
     "android_sdk.accept_license = true",
     "dyalog.acceptLicense = true",
     "input-fonts.acceptLicense",
     "joypixels.acceptLicense = true",
-    "Microsoft Software License Terms are not accepted",
     "nvidia.acceptLicense = true",
     "sc2-headless.accept_license = true",
     "segger-jlink.acceptLicense = true",
