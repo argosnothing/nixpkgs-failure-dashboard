@@ -14,7 +14,7 @@ mkdir -p "$LOG_DIR"
 
 build_package() {
   local name="$1"
-  local escaped_name=$(python -c "print('.'.join(f'\"{x}\"' for x in '$name'.split('.')))")
+  local escaped_name=$(python3 -c "print('.'.join(f'\"{x}\"' for x in '$name'.split('.')))")
 
   echo "Starting build: $escaped_name"
   out_log="$LOG_DIR/${name}.log"
