@@ -316,6 +316,7 @@ a {
   & > span {
     inset-inline: 1em !important;
     width: inherit !important;
+    white-space: pre-wrap;
   }
 }
 
