@@ -77,7 +77,7 @@ TAG_CHECKS = [
     ),
     ErrorCheck(
         name="python/pytest-failure",
-        pattern=r"==+.*(errors?|failed)",
+        pattern=r"=========+.*(errors?|failed)",
         hints=[r"==== short test summary info ===="],
     ),
     ErrorCheck(
