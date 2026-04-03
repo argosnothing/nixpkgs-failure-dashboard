@@ -38,14 +38,13 @@ function BuildEntry({
   let isCurrent = selected === entry.attrpath;
 
   return (
-    <li style={style}>
-      <button
-        className={"build-entry " + (isCurrent ? "current" : "")}
-        onClick={() => onSelect(entry)}
-      >
-        <span className="attrpath">{entry.attrpath}</span>
-      </button>
-    </li>
+    <button
+      style={style}
+      className={"build-entry " + (isCurrent ? "current" : "")}
+      onClick={() => onSelect(entry)}
+    >
+      <span className="attrpath">{entry.attrpath}</span>
+    </button>
   );
 }
 
@@ -329,26 +328,28 @@ export default function App() {
         </div>
 
         <div className="panel panel-right">
-          <h2>Log Viewer</h2>
-          {selectedBuild ? (
+          <div className="log-meta">
+            <h2>Log Viewer</h2>
+            {selectedBuild ? (
             <>
-              <div className="log-meta">
                 <p>
                   Viewing { selectedBuild.attrpath }
                 </p>
                 { selectedBuild.hydra_id &&
                   <a href={`https://hydra.nixos.org/build/${ selectedBuild.hydra_id }`}>hydra</a>
                 }
-              </div>
-              <span className="separator"></span>
-              <LogViewer
-                logContent={logContent}
-                errorLineNumber={selectedBuild.error_line_number}
-              />
             </>
           ) : (
             <p>Select a build to view its log</p>
           )}
+          </div>
+          <span className="separator"></span>
+          {selectedBuild &&
+            <LogViewer
+              logContent={logContent}
+              errorLineNumber={selectedBuild.error_line_number}
+            />
+          }
         </div>
       </div>
     

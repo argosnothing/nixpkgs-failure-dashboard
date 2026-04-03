@@ -82,6 +82,9 @@ a {
     display: flex;
     flex-flow: column;
     font-size: 12px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    scrollbar-color: #b7cefd #050b18;
     gap: .5em;
 
     .tag-item {
@@ -121,6 +124,8 @@ a {
 
   &-right {
     max-width: 50vw;
+    padding: 0;
+    padding-block: 1em;
   }
 
   &-left-top {
@@ -148,11 +153,18 @@ a {
   }
 
   &-left-bottom {
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 1em;
     flex: 1;
+    padding: 0;
+    padding-block: 1em;
+    overflow: hidden;
+
+    & > .panel-vsplit, > .build-entries {
+      scrollbar-color: #b7cefd #050b18;
+      padding-inline: 1em;
+    }
   }
 
   &-hsplit {
@@ -183,6 +195,9 @@ a {
 }
 
 .build-entry {
+  inset-inline: 1em !important;
+  width: inherit !important;
+
   padding: 5px 8px;
   font-size: 14px;
 
@@ -218,21 +233,6 @@ a {
   }
 }
 
-.log-viewer {
-  font-family: "Jetbrains Mono", monospace;
-  word-break: break-all;
-  text-wrap: wrap;
-  overflow-y: scroll;
-  font-size: 12px;
-  height: 100%;
-}
-
-.separator {
-  width: 300%;
-  border-top: 1px solid white;
-  transform: translateX(-50%);
-}
-
 @media (max-width: 1240px) {
   .panel {
     &-dual-view {
@@ -251,7 +251,8 @@ a {
 
     &-tags {
       max-height: 15vh;
-      overflow: scroll;
+      overflow-x: clip;
+      overflow-y: scroll;
     }
   }
 }
@@ -281,14 +282,9 @@ a {
   gap: .5em;
 }
 
-.log-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1em;
-}
-
 .btn {
+  margin: 2px;
+  box-sizing: content-box;
   border: 1px solid transparent;
   padding: 5px 8px;
   background: #b7cefd;
@@ -302,14 +298,44 @@ a {
   }
 }
 
+.separator {
+  width: 100%;
+  border-top: 1px solid white;
+}
+
+.log-viewer {
+  padding-inline: 1em;
+  scrollbar-color: #b7cefd #050b18;
+  font-family: "Jetbrains Mono", monospace;
+  word-break: break-all;
+  text-wrap: wrap;
+  overflow-y: scroll;
+  font-size: 12px;
+  height: 100%;
+
+  & > span {
+    inset-inline: 1em !important;
+    width: inherit !important;
+  }
+}
+
+.log-meta {
+  display: flex;
+  flex-direction: column;
+  padding-inline: 1em;
+  gap: 1em;
+}
+
 .log-actions {
   display: flex;
   align-items: center;
+  padding-inline: 1em;
   gap: 1em;
 }
 
 .log-line {
   padding: 0 4px;
+  box-sizing: border-box;
   line-height: 18px;
 
   &.error::before {
