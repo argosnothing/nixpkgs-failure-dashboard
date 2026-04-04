@@ -17,3 +17,6 @@ last-commit.json
 # front
 node_modules
 dist
+
+# nix
+result*
