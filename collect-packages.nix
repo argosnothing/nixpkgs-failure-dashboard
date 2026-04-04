@@ -1,26 +1,24 @@
-{ pkgs }:
-
-let
+{pkgs}: let
   inherit (pkgs) lib;
 
   collect = prefix: pkg: name:
-    if lib.isDerivation pkg then
-      [ "${prefix}${name}" ]
-    else if
-      pkg.recurseForDerivations or false || pkg.recurseForRelease or false
-    then
-      packagesWith "${name}." pkg
-    else
-      [ ];
+    if lib.isDerivation pkg
+    then ["${prefix}${name}"]
+    else if pkg.recurseForDerivations or false || pkg.recurseForRelease or false
+    then packagesWith "${name}." pkg
+    else [];
 
-  packagesWith =
-    prefix: set:
+  packagesWith = prefix: set:
     lib.flatten (
       lib.mapAttrsToList (
-        name: pkg:
-        let result = builtins.tryEval (collect prefix pkg name);
-        in if result.success then result.value else [ ]
-      ) set
+        name: pkg: let
+          result = builtins.tryEval (collect prefix pkg name);
+        in
+          if result.success
+          then result.value
+          else []
+      )
+      set
     );
-
-in packagesWith "" pkgs
+in
+  packagesWith "" pkgs

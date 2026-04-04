@@ -9,23 +9,12 @@
 
     applySystems = lib.genAttrs ["x86_64-linux"];
     forAllSystems = f:
-      applySystems (
-        system:
-          f (import nixpkgs {
-            inherit system;
-            config = {
-              android_sdk.accept_license = true;
-              allowUnfree = true;
-            };
-          })
-      );
+      applySystems (system: f nixpkgs.legacyPackages.${system});
   in {
     formatter = forAllSystems (pkgs: pkgs.alejandra);
 
     devShells = forAllSystems (pkgs: let
-      py-env = pkgs.python3.withPackages (
-        p: [ p.hatchling ]
-      );
+      py-env = pkgs.python3.withPackages (p: [p.hatchling]);
     in {
       default = pkgs.mkShell {
         packages = with pkgs; [
@@ -37,6 +26,10 @@
           pnpm
         ];
       };
+    });
+
+    packages = forAllSystems (pkgs: {
+      default = pkgs.callPackage ./default.nix {};
     });
   };
 }
