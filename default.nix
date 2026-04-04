@@ -13,7 +13,7 @@
   stdenv,
 }:
 let
-  version = "0.0.1";
+  version = "1.0.0";
   ui = stdenv.mkDerivation (finalAttrs: {
     inherit version;
     pname = "nixpkgs-failure-dashboard-frontend";
