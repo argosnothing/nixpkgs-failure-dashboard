@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
 REPO="NixOS/nixpkgs"
 
-if [ ! -f ".run" ]; then
-   echo "New run"
+XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+RUNTIME_DIR="$XDG_STATE_HOME/nixpkgs-failure-dashboard"
 
-   rm packages
-   rm -rf build_logs; mkdir -p build-logs
+if [ ! -f "$RUNTIME_DIR/.run" ]; then
+  echo "New run"
+
+  rm "$RUNTIME_DIR/packages"
+  rm -rf "$RUNTIME_DIR/build-logs"
+  mkdir -p "$RUNTIME_DIR/build-logs"
 
   curl -s "https://api.github.com/repos/$REPO/commits?per_page=1" \
-    | jq '.[0] | {rev: .sha, name: .commit.message, date: .commit.author.date}' > last-commit.json
+    | jq '.[0] | {rev: .sha, name: .commit.message, date: .commit.author.date}' \
+    > "$RUNTIME_DIR/last-commit.json"
 fi
 
-REV=$(jq --raw-output .rev last-commit.json)
+REV=$(jq --raw-output .rev "$RUNTIME_DIR/last-commit.json")
 echo "Using nixpkgs rev=$REV"
 
 NIXPKGS_PATH=$(nix eval --impure --expr "
@@ -19,24 +24,28 @@ NIXPKGS_PATH=$(nix eval --impure --expr "
   in (fetchTarball { inherit url; })" | tr -d '"')
 
 if [ ! -f ".run" ]; then
-nix eval --impure --json --expr "
-  (import ./collect-packages.nix) {
-    pkgs = import $NIXPKGS_PATH {
-      config = {
-        allowAliases = false;
-        allowUnfree = true;
-        cudaSupport = true;
-        recursionMode = \"hydra\";
+  nix eval --impure --json --expr "
+    (import ./collect-packages.nix) {
+      pkgs = import $NIXPKGS_PATH {
+        config = {
+          allowAliases = false;
+          allowUnfree = true;
+          cudaSupport = true;
+          recursionMode = \"hydra\";
+        };
       };
-    };
-  }
-" -vv > packages.json
-cat packages.json | tr -d '["]' | tr ',' '\n' > packages
-touch .run
+    }" -vv > "$RUNTIME_DIR/packages.json"
+
+  cat $RUNTIME_DIR/packages.json \
+    | tr -d '["]' \
+    | tr ',' '\n' \
+    > "$RUNTIME_DIR/packages"
+
+  touch $RUNTIME_DIR/.run
 fi
 
-echo "starting build of $(wc -l packages) packages"
+echo "starting build of $(wc -l < "$RUNTIME_DIR/packages") packages"
 sleep 1
 
-./run-build.sh packages "$NIXPKGS_PATH"
-rm .run
+./run-build.sh "$RUNTIME_DIR/packages" "$NIXPKGS_PATH"
+rm "$RUNTIME_DIR/.run"

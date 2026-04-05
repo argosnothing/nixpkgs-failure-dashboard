@@ -2,13 +2,16 @@
 
 set -euo pipefail
 
+XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+RUNTIME_DIR="$XDG_STATE_HOME/nixpkgs-failure-dashboard"
+
 INPUT_FILE="$1"
 NIXPKGS_PATH="$2"
 
 JOBS=$(nproc)
 TIMEOUT=30
 BATCH_SIZE=5000
-LOG_DIR="build-logs"
+LOG_DIR="$RUNTIME_DIR/build-logs"
 
 mkdir -p "$LOG_DIR"
 
@@ -28,7 +31,7 @@ build_package() {
       --max-jobs 1 \
       --cores 1 \
       --no-link \
-      2>&1 | tee $out_log
+      2>&1 | tee "$out_log"
 
   status=${PIPESTATUS[0]}
 
@@ -53,7 +56,7 @@ for chunk in "$CHUNK_DIR"/chunk_*; do
   cat "$chunk" | xargs -0 -I{} -P "$JOBS" bash -c 'build_package "$@"' _ {}
 
   DISK_USAGE=$(df /nix/store --output=pcent | tail -1 | tr -dc '0-9')
-  if [ "$DISK_USAGE" -gt 50 ]; then
+  if [ "$DISK_USAGE" -gt 90 ]; then
     nix-collect-garbage -d
   fi
 done

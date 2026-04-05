@@ -1,17 +1,15 @@
 import csv
 import io
 import os
-import pathlib
 import re
 import urllib.request
 from collections import defaultdict
 from contextlib import contextmanager
 
+from .config import RUNTIME_DIR, BUILD_LOGS_DIR
 from .db import get_db, reset_db
 from .models import Build
 from .tagging import TAG_CHECKS, ErrorCheck
-
-LOG_DIR = pathlib.Path("build-logs")
 
 CSV_URL = (
     "https://raw.githubusercontent.com/"
@@ -103,8 +101,8 @@ def find_error_and_tag(log: str) -> tuple[str, int | None]:
 def main():
     builds = []
     logs = sorted(
-        LOG_DIR / entry
-        for entry in os.listdir(LOG_DIR)
+        BUILD_LOGS_DIR / entry
+        for entry in os.listdir(BUILD_LOGS_DIR)
         if entry.endswith(".log")
     )
 

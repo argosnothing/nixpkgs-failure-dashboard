@@ -1,13 +1,14 @@
 import pathlib
-import subprocess
 from contextlib import asynccontextmanager
 
+import os
 import orjson
 import uvicorn
 from fastapi import FastAPI, Query, Response
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 
+from .config import RUNTIME_DIR, BUILD_LOGS_DIR, DIST_BUILD_DIR
 from .db import get_db
 from .models import Build
 
@@ -17,7 +18,7 @@ state = {}
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     state["commit"] = orjson.loads(
-        pathlib.Path("last-commit.json").read_text()
+        (RUNTIME_DIR / "last-commit.json").read_text()
     )
 
     with next(get_db()) as session:
@@ -56,7 +57,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.mount("/build-logs", StaticFiles(directory="build-logs"))
+app.mount("/build-logs", StaticFiles(directory=BUILD_LOGS_DIR))
 
 
 @app.get("/api/builds")
