@@ -10,10 +10,13 @@ __pycache__
 # generated
 build-logs
 packages.json
-packages
+all_packages
 builds.db
 last-commit.json
 
 # front
 node_modules
 dist
+
+# nix
+result*
