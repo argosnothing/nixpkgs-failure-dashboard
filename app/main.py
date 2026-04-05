@@ -78,6 +78,6 @@ def search_logs(q: str = Query(..., min_length=3, max_length=100)):
 
 
 def main():
-    app.mount("/", StaticFiles(directory="dist", html=True))
+    app.mount("/", StaticFiles(directory=DIST_BUILD_DIR, html=True))
 
     uvicorn.run(app, host="0.0.0.0", port=8080)
