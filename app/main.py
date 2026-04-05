@@ -35,7 +35,7 @@ async def lifespan(_: FastAPI):
     state["search"] = {}
 
     for b in rows:
-        logfile = pathlib.Path("build-logs") / f"{b.attrpath}.log"
+        logfile = pathlib.Path(RUNTIME_DIR / "build-logs") / f"{b.attrpath}.log"
 
         state["search"][b.attrpath] = logfile.read_bytes().decode(
             errors="ignore"
