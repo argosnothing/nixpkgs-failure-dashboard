@@ -7,7 +7,7 @@ RUNTIME_DIR="$XDG_STATE_HOME/nixpkgs-failure-dashboard"
 if [ ! -f "$RUNTIME_DIR/.run" ]; then
   echo "New run"
 
-  rm "$RUNTIME_DIR/packages"
+  rm "$RUNTIME_DIR/all_packages"
   rm -rf "$RUNTIME_DIR/build-logs"
   mkdir -p "$RUNTIME_DIR/build-logs"
 
@@ -34,18 +34,18 @@ if [ ! -f ".run" ]; then
           recursionMode = \"hydra\";
         };
       };
-    }" -vv > "$RUNTIME_DIR/packages.json"
+    }" -vv > "$RUNTIME_DIR/all_packages.json"
 
-  cat $RUNTIME_DIR/packages.json \
+  cat $RUNTIME_DIR/all_packages.json \
     | tr -d '["]' \
     | tr ',' '\n' \
-    > "$RUNTIME_DIR/packages"
+    > "$RUNTIME_DIR/all_packages"
 
   touch $RUNTIME_DIR/.run
 fi
 
-echo "starting build of $(wc -l < "$RUNTIME_DIR/packages") packages"
+echo "starting build of $(wc -l < "$RUNTIME_DIR/all_packages") packages"
 sleep 1
 
-./run-build.sh "$RUNTIME_DIR/packages" "$NIXPKGS_PATH"
+./run-build.sh "$RUNTIME_DIR/all_packages" "$NIXPKGS_PATH"
 rm "$RUNTIME_DIR/.run"
